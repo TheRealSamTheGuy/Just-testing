@@ -2,291 +2,292 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pixel Dash</title>
+<title>Minesweeper // C0d3r_M0d3</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-    html, body {
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+    :root {
+        --bg: #0a0f0a;
+        --primary: #00ff9f;
+        --secondary: #00ffaa;
+        --danger: #ff4d4d;
+        --cell-bg: #0f1912;
+        --cell-hover: #14261b;
+    }
+    body {
         margin: 0;
-        padding: 0;
-        font-family: 'Segoe UI', sans-serif;
-        background: linear-gradient(135deg, #1d1d1d, #2e2e2e);
-        color: white;
+        font-family: 'Share Tech Mono', monospace;
+        background: var(--bg);
+        color: var(--primary);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
         overflow: hidden;
     }
-
-    /* Center utility */
-    .center {
+    header {
+        text-align: center;
+        margin-top: 10px;
+    }
+    h1 {
+        font-size: 32px;
+        color: var(--secondary);
+        text-shadow: 0 0 5px var(--secondary), 0 0 20px var(--secondary);
+        letter-spacing: 2px;
+    }
+    #controls {
+        margin: 10px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    button {
+        padding: 6px 12px;
+        font-size: 14px;
+        background: transparent;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+        cursor: pointer;
+        transition: 0.2s;
+        text-shadow: 0 0 5px var(--primary);
+    }
+    button:hover {
+        background: var(--cell-hover);
+        box-shadow: 0 0 10px var(--primary);
+    }
+    #game-container {
+        display: grid;
+        gap: 1px;
+        background: var(--primary);
+        padding: 5px;
+        border-radius: 4px;
+        box-shadow: 0 0 15px var(--primary);
+        margin-top: 5px;
+        position: relative;
+        overflow: hidden;
+    }
+    .scanlines {
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: repeating-linear-gradient(
+            to bottom,
+            rgba(0, 255, 159, 0.03),
+            rgba(0, 255, 159, 0.03) 2px,
+            transparent 2px,
+            transparent 4px
+        );
+        animation: scroll 5s linear infinite;
+    }
+    @keyframes scroll {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(4px); }
+    }
+    .cell {
+        width: 28px;
+        height: 28px;
+        background: var(--cell-bg);
         display: flex;
         justify-content: center;
         align-items: center;
-    }
-
-    /* Landing page styles */
-    #landing {
-        height: 100vh;
-        flex-direction: column;
-        text-align: center;
-    }
-    .logo {
-        font-size: 64px;
         font-weight: bold;
-        color: #00d4ff;
-        text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff;
-        margin-bottom: 20px;
-    }
-    .desc {
-        font-size: 18px;
-        max-width: 600px;
-        margin: 0 auto 30px auto;
-        color: #ccc;
-    }
-    .play-btn {
-        background: #00d4ff;
-        border: none;
-        padding: 15px 30px;
-        font-size: 20px;
-        border-radius: 8px;
         cursor: pointer;
-        color: #000;
-        font-weight: bold;
-        transition: background 0.3s;
+        user-select: none;
+        color: var(--primary);
+        text-shadow: 0 0 5px var(--primary);
     }
-    .play-btn:hover {
-        background: #00aacc;
+    .cell:hover {
+        background: var(--cell-hover);
     }
-
-    /* Device selection styles */
-    #device-select {
-        height: 100vh;
-        flex-direction: column;
-        display: none;
-        text-align: center;
+    .cell.revealed {
+        background: #001c11;
     }
-    .device-btn {
-        background: #444;
-        border: none;
-        padding: 15px 30px;
-        font-size: 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        color: white;
-        margin: 10px;
-        transition: background 0.3s;
+    .cell.flagged {
+        color: #ffcc00;
+        text-shadow: 0 0 5px #ffcc00;
     }
-    .device-btn:hover {
-        background: #666;
+    .cell.mine {
+        background: var(--danger);
+        color: black;
+        text-shadow: none;
     }
-
-    /* Game canvas */
-    #game-container {
-        display: none;
-        background: black;
-        height: 100vh;
-        width: 100vw;
-    }
-    canvas {
-        display: block;
-        margin: auto;
-        background: #4cafef;
-        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    #status {
+        margin-top: 10px;
+        font-size: 14px;
+        text-shadow: 0 0 5px var(--primary);
     }
 </style>
 </head>
 <body>
 
-<!-- Landing Page -->
-<div id="landing" class="center">
-    <div class="logo">🎮 Pixel Dash</div>
-    <div class="desc">
-        A fast-paced one-tap / swipe reaction game where you control a cube racing through a world of spikes and gaps.  
-        Jump, dodge, and survive as the speed increases.  
-        Can you master the double-speed mode and beat your high score?
-    </div>
-    <button class="play-btn" onclick="showDeviceSelect()">Play Now</button>
+<header>
+    <h1>> MINESWEEPER_C0D3R_M0D3</h1>
+</header>
+
+<div id="controls">
+    <button onclick="startGame(9, 9, 10)">[BEGINNER]</button>
+    <button onclick="startGame(16, 16, 40)">[INTERMEDIATE]</button>
+    <button onclick="startGame(30, 16, 99)">[EXPERT]</button>
+    <button onclick="customGame()">[CUSTOM]</button>
 </div>
 
-<!-- Device Selection -->
-<div id="device-select" class="center">
-    <h2>Select your device</h2>
-    <button class="device-btn" onclick="startGame('pc')">💻 PC</button>
-    <button class="device-btn" onclick="startGame('mobile')">📱 Phone</button>
+<div id="game-container">
+    <div class="scanlines"></div>
 </div>
-
-<!-- Game Container -->
-<div id="game-container" class="center">
-    <canvas id="game"></canvas>
-</div>
+<div id="status"></div>
 
 <script>
-// UI Navigation
-function showDeviceSelect() {
-    document.getElementById("landing").style.display = "none";
-    document.getElementById("device-select").style.display = "flex";
+let rows, cols, mines, board, revealedCount, gameOverFlag;
+
+function startGame(c, r, m) {
+    cols = c;
+    rows = r;
+    mines = m;
+    revealedCount = 0;
+    gameOverFlag = false;
+    generateBoard();
+    drawBoard();
+    statusMsg("SYSTEM ONLINE: Minesweeper grid generated.");
 }
 
-function startGame(device) {
-    document.getElementById("device-select").style.display = "none";
-    document.getElementById("game-container").style.display = "flex";
-    initGame(device);
+function customGame() {
+    let c = parseInt(prompt("Columns:", 10));
+    let r = parseInt(prompt("Rows:", 10));
+    let m = parseInt(prompt("Mines:", 10));
+    if (!c || !r || !m) return;
+    startGame(c, r, m);
 }
 
-// Game Variables
-let canvas, ctx, isMobile, width, height, cube, gravity, jumpForce, speed, obstacles, groundHeight, score, level, bgColor, doubleSpeedTimer, gameOver;
+function statusMsg(msg) {
+    document.getElementById("status").textContent = "> " + msg;
+}
 
-// Initialize Game
-function initGame(device) {
-    canvas = document.getElementById("game");
-    ctx = canvas.getContext("2d");
+function generateBoard() {
+    board = Array.from({ length: rows }, () =>
+        Array.from({ length: cols }, () => ({
+            mine: false,
+            revealed: false,
+            flagged: false,
+            adjacent: 0
+        }))
+    );
 
-    isMobile = device === "mobile";
-    width = isMobile ? window.innerWidth : 800;
-    height = isMobile ? window.innerHeight : 400;
-    canvas.width = width;
-    canvas.height = height;
+    let placed = 0;
+    while (placed < mines) {
+        let x = Math.floor(Math.random() * cols);
+        let y = Math.floor(Math.random() * rows);
+        if (!board[y][x].mine) {
+            board[y][x].mine = true;
+            placed++;
+        }
+    }
 
-    cube = { x: 100, y: height - 60, size: 40, dy: 0, jumping: false };
-    gravity = 0.6;
-    jumpForce = -12;
-    speed = 6;
-    obstacles = [];
-    groundHeight = 40;
-    score = 0;
-    level = 1;
-    bgColor = "#4cafef";
-    doubleSpeedTimer = 0;
-    gameOver = false;
-
-    if (isMobile) {
-        let touchStartX = 0, touchStartY = 0;
-        canvas.addEventListener("touchstart", e => {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-        });
-        canvas.addEventListener("touchend", e => {
-            let dx = e.changedTouches[0].clientX - touchStartX;
-            let dy = e.changedTouches[0].clientY - touchStartY;
-            if (Math.abs(dx) < 50 && Math.abs(dy) < 50) {
-                jump();
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            if (!board[y][x].mine) {
+                let count = 0;
+                for (let ny = -1; ny <= 1; ny++) {
+                    for (let nx = -1; nx <= 1; nx++) {
+                        if (ny === 0 && nx === 0) continue;
+                        let yy = y + ny, xx = x + nx;
+                        if (yy >= 0 && yy < rows && xx >= 0 && xx < cols && board[yy][xx].mine) {
+                            count++;
+                        }
+                    }
+                }
+                board[y][x].adjacent = count;
             }
-        });
+        }
+    }
+}
+
+function drawBoard() {
+    const container = document.getElementById("game-container");
+    container.innerHTML = '<div class="scanlines"></div>';
+    container.style.gridTemplateColumns = `repeat(${cols}, 28px)`;
+
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            let cell = document.createElement("div");
+            cell.classList.add("cell");
+            cell.addEventListener("click", () => revealCell(x, y));
+            cell.addEventListener("contextmenu", e => {
+                e.preventDefault();
+                toggleFlag(x, y);
+            });
+            container.appendChild(cell);
+        }
+    }
+}
+
+function revealCell(x, y) {
+    if (gameOverFlag) return;
+    let cell = board[y][x];
+    if (cell.revealed || cell.flagged) return;
+    cell.revealed = true;
+    revealedCount++;
+
+    let domCell = getCellElement(x, y);
+    domCell.classList.add("revealed");
+    if (cell.mine) {
+        domCell.classList.add("mine");
+        domCell.textContent = "X";
+        statusMsg("!! BOOM !! SYSTEM FAILURE DETECTED.");
+        endGame(false);
+        return;
+    }
+    if (cell.adjacent > 0) {
+        domCell.textContent = cell.adjacent;
     } else {
-        document.addEventListener("keydown", e => {
-            if (e.code === "Space" || e.code === "ArrowUp") jump();
-            if (gameOver && e.code === "Enter") resetGame();
-        });
-    }
-
-    loop();
-}
-
-// Game Functions
-function spawnObstacle() {
-    let type = Math.random() < 0.5 ? "gap" : "spike";
-    let widthOrGap = type === "gap" ? 80 + Math.random() * 40 : 40;
-    obstacles.push({
-        x: canvas.width,
-        y: height - groundHeight - (type === "spike" ? 40 : 0),
-        width: widthOrGap,
-        height: type === "spike" ? 40 : 0,
-        type: type
-    });
-}
-
-function jump() {
-    if (!cube.jumping) {
-        cube.dy = jumpForce;
-        cube.jumping = true;
-    }
-}
-
-function update() {
-    if (gameOver) return;
-    let currentSpeed = doubleSpeedTimer > 0 ? speed * 2 : speed;
-    if (doubleSpeedTimer > 0) doubleSpeedTimer--;
-
-    cube.y += cube.dy;
-    cube.dy += gravity;
-    if (cube.y >= height - cube.size - groundHeight) {
-        cube.y = height - cube.size - groundHeight;
-        cube.jumping = false;
-    }
-
-    obstacles.forEach(o => o.x -= currentSpeed);
-    obstacles = obstacles.filter(o => o.x + o.width > 0);
-
-    if (Math.random() < 0.02) spawnObstacle();
-
-    for (let o of obstacles) {
-        if (o.type === "spike") {
-            if (cube.x < o.x + o.width && cube.x + cube.size > o.x && cube.y + cube.size > o.y) {
-                gameOver = true;
-            }
-        } else if (o.type === "gap") {
-            if (cube.x + cube.size > o.x && cube.x < o.x + o.width && cube.y + cube.size >= height - groundHeight) {
-                gameOver = true;
+        for (let ny = -1; ny <= 1; ny++) {
+            for (let nx = -1; nx <= 1; nx++) {
+                if (ny === 0 && nx === 0) continue;
+                let yy = y + ny, xx = x + nx;
+                if (yy >= 0 && yy < rows && xx >= 0 && xx < cols) {
+                    if (!board[yy][xx].revealed) revealCell(xx, yy);
+                }
             }
         }
     }
 
-    score++;
-    if (score % 500 === 0) {
-        level++;
-        bgColor = `hsl(${Math.random() * 360}, 60%, 60%)`;
-        if (Math.random() < 0.3) doubleSpeedTimer = 200;
+    if (revealedCount === rows * cols - mines) {
+        statusMsg("+++ SYSTEM CLEARED. MISSION SUCCESSFUL. +++");
+        endGame(true);
     }
 }
 
-function draw() {
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#222";
-    ctx.fillRect(0, height - groundHeight, canvas.width, groundHeight);
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(cube.x, cube.y, cube.size, cube.size);
-    ctx.fillStyle = "#e53935";
-    obstacles.forEach(o => {
-        if (o.type === "spike") {
-            ctx.beginPath();
-            ctx.moveTo(o.x, o.y + o.height);
-            ctx.lineTo(o.x + o.width / 2, o.y);
-            ctx.lineTo(o.x + o.width, o.y + o.height);
-            ctx.closePath();
-            ctx.fill();
+function toggleFlag(x, y) {
+    if (gameOverFlag) return;
+    let cell = board[y][x];
+    if (cell.revealed) return;
+    cell.flagged = !cell.flagged;
+    let domCell = getCellElement(x, y);
+    domCell.textContent = cell.flagged ? "F" : "";
+    domCell.classList.toggle("flagged", cell.flagged);
+}
+
+function getCellElement(x, y) {
+    return document.getElementById("game-container").children[1 + (y * cols + x)];
+}
+
+function endGame(win) {
+    gameOverFlag = true;
+    if (!win) {
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                if (board[y][x].mine) {
+                    let domCell = getCellElement(x, y);
+                    domCell.classList.add("mine");
+                    domCell.textContent = "X";
+                }
+            }
         }
-    });
-
-    ctx.fillStyle = "#fff";
-    ctx.font = "20px Arial";
-    ctx.fillText(`Score: ${score}`, 10, 25);
-    ctx.fillText(`Level: ${level}`, 10, 50);
-
-    if (gameOver) {
-        ctx.fillStyle = "#fff";
-        ctx.font = "40px Arial";
-        ctx.fillText("Game Over", canvas.width / 2 - 100, canvas.height / 2);
-        ctx.font = "20px Arial";
-        ctx.fillText("Press Enter to Restart", canvas.width / 2 - 100, canvas.height / 2 + 40);
     }
-}
-
-function loop() {
-    update();
-    draw();
-    requestAnimationFrame(loop);
-}
-
-function resetGame() {
-    cube.y = height - 60;
-    cube.dy = 0;
-    cube.jumping = false;
-    score = 0;
-    level = 1;
-    speed = 6;
-    obstacles = [];
-    bgColor = "#4cafef";
-    gameOver = false;
 }
 </script>
-
 </body>
 </html>
