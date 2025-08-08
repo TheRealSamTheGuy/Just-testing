@@ -4,58 +4,53 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Minesight Pro — See the board. Own the game.</title>
-<meta name="description" content="Minesight Pro — professional, accessible Minesweeper with keyboard navigation, leaderboard, and polished UI." />
+<meta name="description" content="Minesight Pro — professional Minesweeper with admin 'soft reveal' and enterprise admin panel." />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='12' width='64' height='64' fill='%232b7cff'/%3E%3Ctext x='50%25' y='55%25' font-size='28' text-anchor='middle' fill='white' font-family='monospace' font-weight='700'%3EMP%3C/text%3E%3C/svg%3E">
 <style>
-  /* ---------- THEME & ROOT ---------- */
+  /* ---------- THEME & LAYOUT ---------- */
   :root{
-    --bg:linear-gradient(180deg,#f6fbff,#eef6ff);
-    --card:#ffffff; --muted:#6b7280; --text:#0f1724; --accent:#2b7cff;
+    --bg: linear-gradient(180deg,#f6fbff,#eef6ff);
+    --card: #ffffff; --muted:#6b7280; --text:#0f1724; --accent:#2b7cff;
     --cell:#eef6ff; --cell-border:#cddaf2; --danger:#ff4d4f; --flag:#ffb400;
     --glass: rgba(255,255,255,0.6);
-    --radius:12px;
-    --max-width:1200px;
+    --radius:12px; --maxw:1200px;
   }
   [data-theme="dark"]{
-    --bg:linear-gradient(180deg,#071026,#08142a);
+    --bg: linear-gradient(180deg,#071026,#08142a);
     --card:#0c1724; --muted:#9aa7bf; --text:#e6eef6; --accent:#6aa8ff;
     --cell:#0b1220; --cell-border:#1f2937; --danger:#ff6b6b; --flag:#ffc870;
     --glass: rgba(10,16,26,0.6);
   }
 
-  /* ---------- LAYOUT ---------- */
   *{box-sizing:border-box}
   html,body{height:100%; margin:0; font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
   body{ background:var(--bg); color:var(--text); display:flex; align-items:center; justify-content:center; padding:28px; }
-  .wrap{ width:100%; max-width:var(--max-width); display:grid; grid-template-columns:360px 1fr; gap:20px; align-items:start; }
+  main.app{ width:100%; max-width:var(--maxw); display:grid; grid-template-columns:360px 1fr; gap:20px; align-items:start; }
 
   .panel{ background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:0 10px 30px rgba(2,6,23,0.06); border:1px solid rgba(0,0,0,0.04); }
-
-  header.app-header{ grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px; }
+  header.top{ grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px; }
   .brand{ display:flex; gap:12px; align-items:center; }
   .logo-badge{ width:46px; height:46px; border-radius:10px; display:grid; place-items:center; color:white; font-weight:800; font-family:monospace; background:linear-gradient(180deg,var(--accent), color-mix(in srgb,var(--accent) 80%, black)); box-shadow:0 8px 26px rgba(43,124,255,0.12); }
   .title-block h1{ margin:0; font-size:18px; }
   .title-block p{ margin:2px 0 0; font-size:13px; color:var(--muted); }
 
-  /* ---------- CONTROLS (LEFT) ---------- */
+  .btn{ padding:10px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:700; }
+  .btn.primary{ background:linear-gradient(180deg,var(--accent), color-mix(in srgb,var(--accent) 85%, black)); color:white; box-shadow:0 6px 18px rgba(43,124,255,0.12); }
+  .btn.ghost{ background:transparent; border:1px solid var(--cell-border); padding:8px 10px; border-radius:8px; color:var(--text); }
+
+  /* CONTROLS LEFT */
   .controls{ display:flex; flex-direction:column; gap:12px; }
-  .controls label{ font-size:13px; color:var(--muted); margin-bottom:6px; display:block; }
-  .controls select, .controls input[type=number], .controls input[type=text]{ width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--cell-border); background:var(--cell); color:var(--text); }
-  .row{ display:flex; gap:8px; }
-  .row > *{ flex:1; }
+  label{ font-size:13px; color:var(--muted); margin-bottom:6px; display:block; }
+  select,input[type=number],input[type=text]{ width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--cell-border); background:var(--cell); color:var(--text); }
 
   .stats{ display:flex; gap:8px; margin-top:6px; }
   .stat{ background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(255,255,255,0.02)); padding:8px 10px; border-radius:8px; min-width:92px; text-align:center; font-weight:700; border:1px solid var(--cell-border); }
 
-  .btn{ padding:10px 12px; border-radius:10px; border: none; cursor:pointer; font-weight:700; }
-  .btn.primary{ background:linear-gradient(180deg,var(--accent), color-mix(in srgb,var(--accent) 85%, black)); color:white; box-shadow:0 6px 18px rgba(43,124,255,0.12); }
-  .btn.ghost{ background:transparent; border:1px solid var(--cell-border); color:var(--text); padding:8px 10px; }
-
-  /* ---------- BOARD (RIGHT) ---------- */
+  /* BOARD RIGHT */
   .board-shell{ display:flex; flex-direction:column; gap:12px; align-items:center; }
   .topbar{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .status{ display:flex; gap:12px; align-items:center; }
-  .status .pill{ background:var(--glass); padding:8px 12px; border-radius:10px; font-weight:800; border:1px solid rgba(255,255,255,0.04); min-width:92px; text-align:center; }
+  .pill{ background:var(--glass); padding:8px 12px; border-radius:10px; font-weight:800; border:1px solid rgba(255,255,255,0.04); min-width:92px; text-align:center; }
 
   .board-wrap{ background:transparent; padding:14px; border-radius:12px; min-height:320px; display:flex; align-items:center; justify-content:center; width:100%; }
   .board{ display:grid; gap:6px; touch-action: manipulation; }
@@ -65,6 +60,7 @@
     background:var(--cell); border-radius:8px; border:1px solid var(--cell-border); font-weight:800; font-size:16px; color:var(--text);
     user-select:none; cursor:pointer; transition: transform .06s ease, background .12s ease, box-shadow .08s ease;
     box-shadow: inset 0 -2px 0 rgba(0,0,0,0.03);
+    position:relative;
   }
   .cell:active{ transform:translateY(1px) scale(.995); }
   .cell.revealed{ background: linear-gradient(180deg,#f8fafc,#eef3ff); box-shadow:none; cursor:default; }
@@ -75,316 +71,467 @@
   .cell[data-num="2"]{ color:#16a34a }
   .cell[data-num="3"]{ color:#dc2626 }
   .cell[data-num="4"]{ color:#7c3aed }
-  .cell[data-num="5"]{ color:#b45309 }
-  .cell[data-num="6"]{ color:#0ea5a4 }
-  .cell[data-num="7"]{ color:#111827 }
-  .cell[data-num="8"]{ color:#6b7280 }
 
-  .footer-row{ width:100%; display:flex; gap:8px; align-items:center; justify-content:space-between; margin-top:6px; }
+  /* Soft-reveal overlay (admin "hack") */
+  .cell.soft-mine::after{
+    content: "💣";
+    position:absolute; inset:6px; display:grid; place-items:center;
+    font-size:16px; pointer-events:none; opacity:0.95;
+    border-radius:6px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+  }
+  .cell.soft-mine.soft-flagged::after{ content: "⚑"; color:var(--flag); }
 
-  /* ---------- LEADERBOARD & DIALOGS ---------- */
-  .leaderboard{ display:flex; flex-direction:column; gap:8px; }
-  .lb-item{ display:flex; justify-content:space-between; padding:8px 10px; border-radius:8px; background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(255,255,255,0.02)); border:1px solid var(--cell-border); }
+  /* ADMIN MODAL STYLES */
+  .modal{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000; }
+  .modal.open{ display:flex; }
+  .modal-card{ background:var(--card); width:780px; max-width:96%; border-radius:12px; padding:18px; box-shadow:0 20px 60px rgba(3,6,23,0.35); border:1px solid rgba(0,0,0,0.06); color:var(--text); }
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
 
-  .hint{ font-size:13px; color:var(--muted); }
+  .audit-log{ max-height:220px; overflow:auto; background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(255,255,255,0.02)); padding:8px; border-radius:8px; border:1px solid var(--cell-border); font-size:13px; color:var(--muted); }
 
-  /* ---------- RESPONSIVE ---------- */
+  /* Responsive */
   @media (max-width:980px){
-    .wrap{ grid-template-columns: 1fr; padding:12px; gap:12px; }
-    .logo-badge{ width:40px; height:40px; }
+    main.app{ grid-template-columns: 1fr; padding:12px; gap:12px; }
     .cell{ width:34px; }
   }
 </style>
 </head>
 <body>
-  <main class="wrap" id="app">
-    <header class="app-header panel" role="banner" aria-label="Minesight Pro header">
-      <div class="brand">
-        <div class="logo-badge" aria-hidden="true">MP</div>
-        <div class="title-block">
-          <h1>Minesight Pro</h1>
-          <p>See the board. Own the game.</p>
-        </div>
+<main class="app" id="app">
+  <!-- Header -->
+  <header class="top panel" role="banner" aria-label="Minesight Pro header">
+    <div class="brand">
+      <div class="logo-badge" aria-hidden="true">MP</div>
+      <div class="title-block">
+        <h1>Minesight Pro</h1>
+        <p>See the board. Own the game. Enterprise admin available</p>
       </div>
-      <div style="display:flex; gap:10px; align-items:center;">
-        <div style="text-align:right;">
-          <div style="font-size:13px; color:var(--muted)">Built for scale</div>
-          <div style="font-weight:800">Optimized · Accessible · Competitive</div>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <label for="theme" style="font-size:13px;color:var(--muted);margin-right:6px;">Theme</label>
-          <select id="theme" aria-label="Theme selector">
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-          <button id="newGameTop" class="btn primary" title="Start new game">New Game</button>
-        </div>
+    </div>
+
+    <div style="display:flex; gap:8px; align-items:center;">
+      <select id="themeSelect" aria-label="Theme selector">
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+
+      <button id="newGameTop" class="btn primary" title="Start new game">New Game</button>
+      <button id="openAdminBtn" class="btn ghost" title="Open Admin Panel">Admin Panel</button>
+      <div id="adminBadge" style="display:none; padding:8px 10px; border-radius:8px; background:linear-gradient(180deg,#eef6ff,#f8fbff); border:1px solid var(--cell-border); font-weight:700; color:var(--muted)">Admin</div>
+    </div>
+  </header>
+
+  <!-- LEFT: Controls -->
+  <section class="panel controls" aria-label="Controls">
+    <h2 style="margin:0 0 6px 0">Game Controls</h2>
+
+    <div>
+      <label for="modeSelect">Mode</label>
+      <select id="modeSelect" aria-label="Choose difficulty mode">
+        <option value="beginner">Beginner — 9 × 9 · 10 mines</option>
+        <option value="intermediate">Intermediate — 16 × 16 · 40 mines</option>
+        <option value="expert">Expert — 16 × 30 · 99 mines</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+
+    <div id="customControls" style="display:none;">
+      <label>Custom board</label>
+      <div style="display:flex; gap:8px;">
+        <input id="rowsInput" type="number" min="5" max="80" value="9" aria-label="Rows">
+        <input id="colsInput" type="number" min="5" max="120" value="9" aria-label="Columns">
+        <input id="minesInput" type="number" min="1" max="1000" value="10" aria-label="Mines">
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat" id="mineCount">Mines: 10</div>
+      <div class="stat" id="flagCount">Flags: 0</div>
+      <div class="stat" id="timer">Time: 0s</div>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-top:8px;">
+      <button id="startBtn" class="btn primary">Start</button>
+      <button id="hintBtn" class="btn ghost">Hint</button>
+    </div>
+
+    <div style="margin-top:12px;">
+      <label>Options</label>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <label style="font-size:13px;color:var(--muted);"><input type="checkbox" id="autoOpen" checked> Auto-open neighbors (chording)</label>
+        <label style="font-size:13px;color:var(--muted);"><input type="checkbox" id="soundToggle" checked> Sound effects</label>
+        <label style="font-size:13px;color:var(--muted);"><input type="checkbox" id="compactToggle"> Compact board</label>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <label>Leaderboard</label>
+      <div id="leaderboard" style="display:flex; flex-direction:column; gap:8px; min-height:70px;"></div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <input id="playerName" type="text" placeholder="Your name (leaderboard)" />
+        <button id="clearLB" class="btn ghost">Clear</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: Board -->
+  <section class="panel board-shell" aria-label="Game board">
+    <div class="topbar">
+      <div class="status">
+        <div class="pill" id="statusText">Ready</div>
+        <div class="pill" id="boardInfo">9 × 9 · Beginner</div>
+      </div>
+
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="showMinesToggle" class="btn ghost" title="Admin-only: soft-reveal mines">Soft-Show Mines</button>
+        <button id="copyResult" class="btn ghost">Copy Result</button>
+        <button id="resetHints" class="btn ghost">Reset Hints</button>
+      </div>
+    </div>
+
+    <div id="boardWrap" class="board-wrap" role="application" aria-label="Minesight Pro board area">
+      <div id="board" class="board" role="grid" tabindex="0" aria-label="Mines grid"></div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; width:100%; margin-top:6px;">
+      <div style="display:flex; gap:8px;">
+        <button id="undoBtn" class="btn ghost">Undo</button>
+        <button id="compactView" class="btn ghost">Toggle Compact</button>
+      </div>
+      <div style="font-size:13px;color:var(--muted)">Minesight Pro · v1.1</div>
+    </div>
+  </section>
+</main>
+
+<!-- Admin login modal -->
+<div class="modal" id="loginModal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <h2>Admin Login</h2>
+    <p style="color:var(--muted)">Enter administrator credentials to access the control center.</p>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <input id="loginUser" placeholder="Username" />
+      <input id="loginPass" placeholder="Password" type="password" />
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+      <button id="loginCancel" class="btn ghost">Cancel</button>
+      <button id="loginSubmit" class="btn primary">Sign in</button>
+    </div>
+    <p style="margin-top:8px; font-size:13px; color:var(--muted)"><strong>Demo credentials:</strong> Sam / test</p>
+  </div>
+</div>
+
+<!-- Admin panel modal -->
+<div class="modal" id="adminModal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="modal-card" aria-label="Admin Control Center">
+    <header style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="margin:0">Admin Control Center</h2>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <div id="adminUserBadge" style="font-weight:800;color:var(--muted)"></div>
+        <button id="adminLogout" class="btn ghost">Logout</button>
       </div>
     </header>
 
-    <!-- LEFT PANEL: Controls -->
-    <section class="panel controls" aria-label="Controls">
-      <h2 style="margin:0 0 6px 0">Game Controls</h2>
-
+    <div class="grid-2" style="margin-top:12px;">
       <div>
-        <label for="mode">Mode</label>
-        <select id="mode" aria-label="Choose difficulty mode">
-          <option value="beginner">Beginner — 9 × 9 · 10 mines</option>
-          <option value="intermediate">Intermediate — 16 × 16 · 40 mines</option>
-          <option value="expert">Expert — 16 × 30 · 99 mines</option>
+        <h3 style="margin:6px 0">Quick controls</h3>
+        <label>Mode</label>
+        <select id="adminMode">
+          <option value="beginner">Beginner — 9×9 · 10</option>
+          <option value="intermediate">Intermediate — 16×16 · 40</option>
+          <option value="expert">Expert — 16×30 · 99</option>
           <option value="custom">Custom</option>
         </select>
-      </div>
 
-      <div id="customControls" style="display:none;">
-        <label>Custom board</label>
-        <div class="row">
-          <input id="rows" type="number" min="5" max="40" value="9" aria-label="Rows">
-          <input id="cols" type="number" min="5" max="60" value="9" aria-label="Columns">
-          <input id="mines" type="number" min="1" max="500" value="10" aria-label="Mines">
+        <div id="adminCustom" style="margin-top:8px; display:none;">
+          <label>Rows / Cols / Mines</label>
+          <div style="display:flex;gap:8px;">
+            <input id="adminRows" type="number" min="5" max="80" value="9" />
+            <input id="adminCols" type="number" min="5" max="120" value="9" />
+            <input id="adminMines" type="number" min="1" max="2000" value="10" />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button id="adminApply" class="btn primary">Apply</button>
+          <button id="adminStart" class="btn ghost">Start Game</button>
+        </div>
+
+        <hr style="margin:12px 0">
+
+        <h3 style="margin:6px 0">Visibility & hacks</h3>
+        <label style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="softRevealToggle"> Show mines (soft) — show mines without losing</label>
+        <label style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="confettiToggle" checked> Confetti on win</label>
+        <label style="display:flex; gap:8px; align-items:center;"><input type="checkbox" id="muteToggle"> Mute sounds</label>
+
+        <div style="margin-top:8px;">
+          <button id="adminExportConfig" class="btn ghost">Export config</button>
+          <input id="adminImportFile" type="file" accept="application/json" style="display:none" />
+          <button id="adminImportBtn" class="btn ghost">Import config</button>
         </div>
       </div>
 
-      <div class="stats">
-        <div class="stat" id="mineCount" aria-live="polite">Mines: 10</div>
-        <div class="stat" id="flagCount" aria-live="polite">Flags: 0</div>
-        <div class="stat" id="timer" aria-live="polite">Time: 0s</div>
-      </div>
+      <div>
+        <h3 style="margin:6px 0">Audit log & leaderboard</h3>
+        <div class="audit-log" id="auditLog"></div>
 
-      <div style="display:flex; gap:8px; margin-top:8px;">
-        <button id="restart" class="btn primary">Start</button>
-        <button id="hint" class="btn ghost" title="Reveal a safe cell">Hint (3)</button>
-      </div>
-
-      <div style="margin-top:12px;">
-        <label>Options</label>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          <label style="font-size:13px;color:var(--muted);"><input type="checkbox" id="autoOpen" checked> Auto-open neighbors (chording)</label>
-          <label style="font-size:13px;color:var(--muted);"><input type="checkbox" id="soundToggle" checked> Sound effects</label>
-          <label style="font-size:13px;color:var(--muted);"><input type="checkbox" id="compactToggle"> Compact board</label>
-        </div>
-      </div>
-
-      <div style="margin-top:12px;">
-        <label>Leaderboard</label>
-        <div class="leaderboard" id="leaderboard">
-          <!-- filled by JS -->
-        </div>
-        <div style="display:flex; gap:8px; margin-top:8px;">
-          <input id="playerName" type="text" placeholder="Your name (for leaderboard)" />
-          <button id="clearLB" class="btn ghost">Clear</button>
-        </div>
-      </div>
-
-      <p class="hint" style="margin-top:10px">Keyboard navigation: <strong>Arrow keys</strong> to move, <strong>Enter/Space</strong> reveal, <strong>F</strong> toggle flag, <strong>Ctrl+R</strong> restart.</p>
-    </section>
-
-    <!-- RIGHT PANEL: Board -->
-    <section class="panel board-shell" aria-label="Game board">
-      <div class="topbar">
-        <div class="status">
-          <div class="pill" id="statusText">Ready</div>
-          <div class="pill" id="boardInfo">9 × 9 · Beginner</div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button id="exportLB" class="btn ghost">Export leaderboard</button>
+          <button id="clearLBAdmin" class="btn ghost">Clear leaderboard</button>
+          <button id="simulate" class="btn ghost">Simulate data</button>
         </div>
 
-        <div style="display:flex; gap:8px; align-items:center;">
-          <button id="showMines" class="btn ghost">Reveal Mines</button>
-          <button id="copyResult" class="btn ghost">Copy Result</button>
-          <button id="toggleHints" class="btn ghost">Reset Hints</button>
+        <hr style="margin:12px 0">
+
+        <h3 style="margin:6px 0">Danger zone</h3>
+        <div style="display:flex; gap:8px;">
+          <button id="forceReveal" class="btn ghost">Reveal mines (force lose)</button>
+          <button id="resetAudit" class="btn ghost">Clear audit log</button>
         </div>
       </div>
+    </div>
 
-      <div id="boardWrap" class="board-wrap" role="application" aria-label="Minesight Pro board area">
-        <div id="board" class="board" role="grid" tabindex="0" aria-label="Mines grid"></div>
-      </div>
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+      <button id="closeAdmin" class="btn ghost">Close</button>
+    </div>
+  </div>
+</div>
 
-      <div class="footer-row">
-        <div style="display:flex; gap:8px; align-items:center;">
-          <button id="undoBtn" class="btn ghost" title="Undo last reveal (limited)">Undo</button>
-          <button id="compactView" class="btn ghost">Toggle Compact</button>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <div style="font-size:13px;color:var(--muted)">Version</div>
-          <div style="font-weight:800">Minesight Pro · v1.0</div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Canvas for confetti -->
-  <canvas id="confetti" style="position:fixed; left:0; top:0; width:100%; height:100%; pointer-events:none; z-index:9999;"></canvas>
+<!-- Confetti canvas -->
+<canvas id="confettiCanvas" style="position:fixed; left:0; top:0; width:100%; height:100%; pointer-events:none; z-index:9999;"></canvas>
 
 <script>
-/* Minesight Pro - Full single-file implementation
-   Features:
-    - game engine (grid, mines, reveal logic)
-    - keyboard navigation and accessibility
-    - leaderboard stored in localStorage
-    - confetti animation on win
-    - sounds (embedded as base64)
-    - undo (basic last action)
-    - thorough inline comments to make extension easy
+/*
+  Minesight Pro — Admin "Soft Reveal" edition
+  - Admin credentials (demo): Sam / test
+  - Soft reveal: admin can show mines visually without causing a loss (non-destructive).
+  - Admin session stored in sessionStorage (demo only).
+  - Audit log stored in localStorage for persistence.
+  - This is a client-side demo: for real production, enforce server-side auth & secure APIs.
 */
 
-/* ----------------------
-   Utility & Constants
-   ---------------------- */
+/* -------------------- Utilities & DOM refs -------------------- */
 const UI = {
-  modeSelect: document.getElementById('mode'),
-  customControls: document.getElementById('customControls'),
-  rowsInput: document.getElementById('rows'),
-  colsInput: document.getElementById('cols'),
-  minesInput: document.getElementById('mines'),
-  restartBtn: document.getElementById('restart'),
-  newGameTop: document.getElementById('newGameTop'),
+  // core
   boardEl: document.getElementById('board'),
-  boardWrap: document.getElementById('boardWrap'),
-  mineCountEl: document.getElementById('mineCount'),
-  flagCountEl: document.getElementById('flagCount'),
+  boardInfo: document.getElementById('boardInfo'),
+  statusText: document.getElementById('statusText'),
+  mineCount: document.getElementById('mineCount'),
+  flagCount: document.getElementById('flagCount'),
   timerEl: document.getElementById('timer'),
-  statusTextEl: document.getElementById('statusText'),
-  boardInfoEl: document.getElementById('boardInfo'),
-  hintBtn: document.getElementById('hint'),
-  showMinesBtn: document.getElementById('showMines'),
-  copyResultBtn: document.getElementById('copyResult'),
-  toggleHintsBtn: document.getElementById('toggleHints'),
+  // controls
+  modeSelect: document.getElementById('modeSelect'),
+  customControls: document.getElementById('customControls'),
+  rowsInput: document.getElementById('rowsInput'),
+  colsInput: document.getElementById('colsInput'),
+  minesInput: document.getElementById('minesInput'),
+  startBtn: document.getElementById('startBtn'),
+  hintBtn: document.getElementById('hintBtn'),
   autoOpenChk: document.getElementById('autoOpen'),
   soundToggle: document.getElementById('soundToggle'),
   compactToggle: document.getElementById('compactToggle'),
-  compactViewBtn: document.getElementById('compactView'),
-  themeSelect: document.getElementById('theme'),
-  playerNameInput: document.getElementById('playerName'),
+  playerName: document.getElementById('playerName'),
   leaderboardEl: document.getElementById('leaderboard'),
   clearLBBtn: document.getElementById('clearLB'),
+
+  // header + admin
+  themeSelect: document.getElementById('themeSelect'),
+  newGameTop: document.getElementById('newGameTop'),
+  openAdminBtn: document.getElementById('openAdminBtn'),
+  adminBadge: document.getElementById('adminBadge'),
+  showMinesToggle: document.getElementById('showMinesToggle'),
+  copyResult: document.getElementById('copyResult'),
+  resetHints: document.getElementById('resetHints'),
+  compactView: document.getElementById('compactView'),
   undoBtn: document.getElementById('undoBtn'),
-  hintCountIndicator: document.getElementById('hint')
+
+  // login + admin modal elements
+  loginModal: document.getElementById('loginModal'),
+  loginUser: document.getElementById('loginUser'),
+  loginPass: document.getElementById('loginPass'),
+  loginSubmit: document.getElementById('loginSubmit'),
+  loginCancel: document.getElementById('loginCancel'),
+  adminModal: document.getElementById('adminModal'),
+  adminMode: document.getElementById('adminMode'),
+  adminCustom: document.getElementById('adminCustom'),
+  adminRows: document.getElementById('adminRows'),
+  adminCols: document.getElementById('adminCols'),
+  adminMines: document.getElementById('adminMines'),
+  adminApply: document.getElementById('adminApply'),
+  adminStart: document.getElementById('adminStart'),
+  softRevealToggle: document.getElementById('softRevealToggle'),
+  confettiToggle: document.getElementById('confettiToggle'),
+  muteToggle: document.getElementById('muteToggle'),
+  adminLogout: document.getElementById('adminLogout'),
+  adminUserBadge: document.getElementById('adminUserBadge'),
+  auditLogEl: document.getElementById('auditLog'),
+  adminExportConfig: document.getElementById('adminExportConfig'),
+  adminImportBtn: document.getElementById('adminImportBtn'),
+  adminImportFile: document.getElementById('adminImportFile'),
+  exportLB: document.getElementById('exportLB'),
+  clearLBAdmin: document.getElementById('clearLBAdmin'),
+  simulateBtn: document.getElementById('simulate'),
+  forceRevealBtn: document.getElementById('forceReveal'),
+  resetAuditBtn: document.getElementById('resetAudit'),
+  closeAdmin: document.getElementById('closeAdmin'),
+  showMinesButton: document.getElementById('showMinesToggle')
 };
 
+/* -------------------- Config & storage keys -------------------- */
 const CONF = {
-  modes: {
-    beginner: {rows:9, cols:9, mines:10},
-    intermediate: {rows:16, cols:16, mines:40},
-    expert: {rows:16, cols:30, mines:99}
-  },
-  maxHints: 3,
-  leaderboardKey: 'minesight_pro_leaderboard_v1'
+  leaderboardKey: 'minesight_pro_lb_v1',
+  auditKey: 'minesight_pro_audit_v1',
+  adminSessionKey: 'minesight_pro_admin_session_v1',
+  defaultHints: 3
 };
 
-/* ----------------------
-   Game State
-   ---------------------- */
+/* -------------------- Game state -------------------- */
 let state = {
   rows: 9, cols: 9, mines: 10,
-  grid: [], // array of cell objects
-  started: false, startTime: null, timerInterval: null, elapsed: 0,
-  flagsLeft: 10, revealedCount: 0,
-  gameOver: false, won: false,
-  hintCount: CONF.maxHints,
+  grid: [], // {mine, revealed, flagged, num}
+  started: false, startTime: 0, elapsed: 0, timerId: null,
+  flagsLeft: 10, revealedCount: 0, gameOver: false, won: false,
+  hintCount: CONF.defaultHints,
   compact: false,
-  lastAction: null, // simple undo (store last reveal index or flag)
-  focusedIdx: 0 // for keyboard navigation
+  autoOpen: true,
+  softReveal: false // admin-only soft reveal (visual, no loss)
 };
 
-/* ----------------------
-   Sounds (tiny base64 beeps)
-   ---------------------- */
-const sounds = {
-  click: 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=',  // tiny click
-  boom:  'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=',
-  win:   'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='
+/* -------------------- Small helpers -------------------- */
+const nowISO = ()=> new Date().toISOString();
+const logAudit = (action, detail='')=>{
+  const entry = {ts: nowISO(), action, detail};
+  const raw = localStorage.getItem(CONF.auditKey);
+  const arr = raw ? JSON.parse(raw) : [];
+  arr.unshift(entry);
+  localStorage.setItem(CONF.auditKey, JSON.stringify(arr.slice(0,1000))); // keep recent
+  renderAudit();
 };
-function playSound(name){
-  if(!UI.soundToggle.checked) return;
-  const url = sounds[name];
-  if(!url) return;
-  const a = new Audio(url);
-  a.volume = 0.26;
-  a.play().catch(()=>{/* ignore play errors */});
+function setAdminSession(user){
+  sessionStorage.setItem(CONF.adminSessionKey, JSON.stringify({user, ts: nowISO()}));
+  UI.adminBadge.style.display = 'inline-block';
+  UI.adminUserBadge.textContent = user;
+  logAudit('admin_login', user);
+}
+function clearAdminSession(){
+  sessionStorage.removeItem(CONF.adminSessionKey);
+  UI.adminBadge.style.display = 'none';
+  UI.adminUserBadge.textContent = '';
+  logAudit('admin_logout', '');
+}
+function isAdmin(){ return !!sessionStorage.getItem(CONF.adminSessionKey); }
+
+/* -------------------- Leaderboard -------------------- */
+function loadLeaderboard(){ try{ return JSON.parse(localStorage.getItem(CONF.leaderboardKey) || '{}'); }catch(e){ return {}; } }
+function saveLeaderboard(lb){ localStorage.setItem(CONF.leaderboardKey, JSON.stringify(lb)); }
+function addLeaderboardEntry(mode, name, time){
+  const lb = loadLeaderboard();
+  if(!lb[mode]) lb[mode]=[];
+  lb[mode].push({name, time, ts: nowISO()});
+  lb[mode].sort((a,b)=>a.time-b.time);
+  lb[mode] = lb[mode].slice(0,50);
+  saveLeaderboard(lb);
+  renderLeaderboard();
+  logAudit('leaderboard_add', `${mode} ${name} ${time}s`);
+}
+function renderLeaderboard(){
+  const mode = UI.modeSelect.value;
+  const lb = loadLeaderboard()[mode] || [];
+  UI.leaderboardEl.innerHTML = '';
+  if(lb.length===0){ UI.leaderboardEl.textContent = 'No entries yet.'; return; }
+  lb.slice(0,10).forEach((e,i)=> {
+    const el = document.createElement('div');
+    el.style.display='flex'; el.style.justifyContent='space-between';
+    el.style.padding='6px'; el.style.borderRadius='6px'; el.style.background='linear-gradient(180deg, rgba(0,0,0,0.02), rgba(255,255,255,0.02))';
+    el.innerHTML = `<div>${i+1}. ${escapeHtml(e.name)}</div><div style="font-weight:800">${e.time}s</div>`;
+    UI.leaderboardEl.appendChild(el);
+  });
+}
+function clearLeaderboard(){ localStorage.removeItem(CONF.leaderboardKey); renderLeaderboard(); logAudit('leaderboard_cleared','admin'); }
+
+/* -------------------- Audit render -------------------- */
+function renderAudit(){
+  const raw = localStorage.getItem(CONF.auditKey);
+  const arr = raw ? JSON.parse(raw) : [];
+  UI.auditLogEl.innerHTML = '';
+  if(arr.length===0){ UI.auditLogEl.textContent = 'No admin actions yet.'; return; }
+  arr.slice(0,200).forEach(a=>{
+    const d = document.createElement('div'); d.style.padding='6px'; d.style.borderBottom='1px solid rgba(0,0,0,0.04)';
+    d.style.fontSize='13px'; d.style.color='var(--muted)';
+    d.textContent = `${a.ts} — ${a.action} ${a.detail ? ' — ' + a.detail : ''}`;
+    UI.auditLogEl.appendChild(d);
+  });
 }
 
-/* ----------------------
-   Helpers: index conversions
-   ---------------------- */
-function idxToRC(i, cols=state.cols){ return [Math.floor(i/cols), i % cols]; }
-function rcToIdx(r,c,cols=state.cols){ return r*cols + c; }
+/* -------------------- Grid helpers -------------------- */
+function rcToIdx(r,c){ return r*state.cols + c; }
+function idxToRC(i){ return [Math.floor(i/state.cols), i % state.cols]; }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
 
-/* ----------------------
-   Grid & Initialization
-   ---------------------- */
-function createGrid(r, c, m){
-  state.rows = r; state.cols = c; state.mines = m;
-  state.grid = Array.from({length: r*c}, ()=>({
-    mine: false, revealed: false, flagged: false, num: 0
-  }));
-  // place mines
-  const indices = [...Array(r*c).keys()];
-  shuffle(indices);
-  const mineIndices = indices.slice(0,m);
-  mineIndices.forEach(i => state.grid[i].mine = true);
-  // calculate neighbor counts
-  for(let i=0;i<state.grid.length;i++){
-    if(state.grid[i].mine) continue;
-    const [rr,cc] = idxToRC(i);
-    let cnt=0;
-    for(let dr=-1; dr<=1; dr++) for(let dc=-1; dc<=1; dc++){
-      if(dr===0 && dc===0) continue;
-      const nr=rr+dr, nc=cc+dc;
-      if(nr>=0 && nr<r && nc>=0 && nc<c) if(state.grid[rcToIdx(nr,nc)].mine) cnt++;
-    }
-    state.grid[i].num = cnt;
-  }
-  // reset counters
-  state.started=false; stopTimer(); state.elapsed=0; state.revealedCount=0; state.flagsLeft=m; state.gameOver=false; state.won=false;
-  state.hintCount = CONF.maxHints;
-  state.lastAction = null;
-  updateUIAfterReset();
-}
-
-/* Fisher-Yates shuffle */
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
-
-/* ----------------------
-   Timer
-   ---------------------- */
+/* -------------------- Timer -------------------- */
 function startTimer(){
-  if(state.timerInterval) return;
-  state.startTime = Date.now() - (state.elapsed*1000);
-  state.timerInterval = setInterval(()=> {
-    state.elapsed = Math.floor((Date.now() - state.startTime)/1000);
+  if(state.timerId) return;
+  state.startTime = Date.now() - state.elapsed*1000;
+  state.timerId = setInterval(()=> {
+    state.elapsed = Math.floor((Date.now()-state.startTime)/1000);
     UI.timerEl.textContent = `Time: ${state.elapsed}s`;
   }, 500);
 }
-function stopTimer(){ if(state.timerInterval){ clearInterval(state.timerInterval); state.timerInterval=null; } }
+function stopTimer(){ if(state.timerId){ clearInterval(state.timerId); state.timerId = null; } }
 
-/* ----------------------
-   Rendering
-   ---------------------- */
+/* -------------------- Create grid -------------------- */
+function createGrid(rows, cols, mines){
+  state.rows = rows; state.cols = cols; state.mines = mines;
+  state.grid = Array.from({length:rows*cols}, ()=>({mine:false, revealed:false, flagged:false, num:0}));
+  // place mines
+  const indices = [...Array(rows*cols).keys()];
+  shuffle(indices);
+  indices.slice(0, mines).forEach(i=> state.grid[i].mine = true);
+  // compute numbers
+  for(let i=0;i<state.grid.length;i++){
+    if(state.grid[i].mine) continue;
+    const [r,c] = idxToRC(i);
+    let cnt=0;
+    for(let dr=-1; dr<=1; dr++) for(let dc=-1; dc<=1; dc++){
+      if(dr===0 && dc===0) continue;
+      const nr=r+dr, nc=c+dc;
+      if(nr>=0 && nr<rows && nc>=0 && nc<cols) if(state.grid[rcToIdx(nr,nc)].mine) cnt++;
+    }
+    state.grid[i].num = cnt;
+  }
+  // reset play state
+  state.started=false; stopTimer(); state.elapsed=0; state.revealedCount=0; state.flagsLeft=state.mines; state.gameOver=false; state.won=false;
+  state.hintCount = CONF.defaultHints;
+  UI.timerEl.textContent = `Time: 0s`;
+  UI.mineCount.textContent = `Mines: ${state.mines}`;
+  UI.flagCount.textContent = `Flags: ${state.mines - state.flagsLeft}`;
+}
+
+/* -------------------- Render board -------------------- */
 function renderBoard(){
-  const {rows, cols} = state;
   UI.boardEl.innerHTML = '';
-  UI.boardEl.style.gridTemplateColumns = `repeat(${cols}, ${state.compact? '32px' : '38px'})`;
+  UI.boardEl.style.gridTemplateColumns = `repeat(${state.cols}, ${state.compact ? '32px' : '38px'})`;
   UI.boardEl.style.gap = state.compact ? '4px' : '6px';
-  for(let i=0;i<rows*cols;i++){
+  for(let i=0;i<state.grid.length;i++){
     const cell = document.createElement('button');
     cell.className = 'cell';
     cell.setAttribute('data-idx', i);
     cell.setAttribute('role','gridcell');
     cell.tabIndex = 0;
-    // event listeners
-    cell.addEventListener('click', (e)=> { onCellClick(i, e); });
+    // events
+    cell.addEventListener('click', ()=> onCellClick(i));
     cell.addEventListener('contextmenu', (e)=> { e.preventDefault(); toggleFlag(i); });
     cell.addEventListener('keydown', (e)=> {
-      if(e.key==='Enter' || e.key===' ') { e.preventDefault(); onCellClick(i, e); }
-      if(e.key.toLowerCase()==='f'){ e.preventDefault(); toggleFlag(i); }
+      if(e.key==='Enter' || e.key===' ') { e.preventDefault(); onCellClick(i); }
+      if(e.key.toLowerCase()==='f') { e.preventDefault(); toggleFlag(i); }
     });
     setupLongPress(cell, ()=> toggleFlag(i));
     UI.boardEl.appendChild(cell);
   }
   updateBoardVisuals();
-  UI.boardInfoEl.textContent = `${rows} × ${cols} · ${UI.modeSelect.options[UI.modeSelect.selectedIndex].text.split('—')[0].trim()}`;
+  UI.boardInfo.textContent = `${state.rows} × ${state.cols} · ${UI.modeSelect.options[UI.modeSelect.selectedIndex].text.split('—')[0].trim()}`;
 }
 
-/* update DOM cells to match state */
+/* -------------------- Update visuals (includes soft reveal) -------------------- */
 function updateBoardVisuals(){
   for(let i=0;i<state.grid.length;i++){
     const g = state.grid[i];
@@ -393,153 +540,134 @@ function updateBoardVisuals(){
     el.className = 'cell';
     el.removeAttribute('data-num');
     el.textContent = '';
+    el.style.background = '';
     el.title = '';
     if(g.revealed){
       el.classList.add('revealed');
-      if(g.mine){ el.classList.add('mine'); el.textContent = '💣'; el.title = 'Mine'; }
+      if(g.mine){ el.classList.add('mine'); el.textContent = '💣'; el.title='Mine'; }
       else if(g.num>0){ el.textContent = g.num; el.setAttribute('data-num', g.num); el.title = `${g.num} adjacent mines`; }
       else { el.textContent = ''; el.title = 'No adjacent mines'; }
     } else {
-      if(g.flagged){ el.classList.add('flag'); el.textContent = '⚑'; el.title = 'Flagged'; }
-      else { el.textContent=''; el.title = 'Hidden'; }
+      if(g.flagged){ el.classList.add('flag'); el.textContent = '⚑'; el.title='Flagged'; }
+      // soft reveal overlay (admin-only non-destructive)
+      if(state.softReveal && g.mine && isAdmin()){
+        el.classList.add('soft-mine');
+        if(g.flagged) el.classList.add('soft-flagged');
+      } else {
+        el.classList.remove('soft-mine');
+        el.classList.remove('soft-flagged');
+      }
     }
   }
-  UI.mineCountEl.textContent = `Mines: ${state.mines}`;
-  UI.flagCountEl.textContent = `Flags: ${state.mines - state.flagsLeft}`;
+  UI.mineCount.textContent = `Mines: ${state.mines}`;
+  UI.flagCount.textContent = `Flags: ${state.mines - state.flagsLeft}`;
   UI.hintBtn.textContent = `Hint (${state.hintCount})`;
-  UI.timerEl.textContent = `Time: ${state.elapsed}s`;
 }
 
-/* ---------- Long-press for touch flagging ---------- */
+/* -------------------- Long-press (touch) -------------------- */
 function setupLongPress(el, onLong){
-  let timer=null;
-  el.addEventListener('touchstart', ()=> { timer = setTimeout(()=> { onLong(); timer=null; }, 650); });
-  el.addEventListener('touchend', ()=> { if(timer) { clearTimeout(timer); timer=null; } });
-  el.addEventListener('touchmove', ()=> { if(timer) { clearTimeout(timer); timer=null; } });
+  let t=null;
+  el.addEventListener('touchstart', ()=> { t = setTimeout(()=> { onLong(); t=null; }, 650); });
+  el.addEventListener('touchend', ()=> { if(t) clearTimeout(t); t=null; });
+  el.addEventListener('touchmove', ()=> { if(t) clearTimeout(t); t=null; });
 }
 
-/* ----------------------
-   Click / Reveal / Flag / Chord
-   ---------------------- */
-function onCellClick(i, e){
+/* -------------------- Click / Reveal / Flag / Chording -------------------- */
+function onCellClick(i){
   if(state.gameOver) return;
-  // if both mouse buttons pressed -> chord (not reliable in browsers); we'll support double-click to chord
-  // First reveal or chord logic
   const cell = state.grid[i];
   if(cell.flagged || cell.revealed){
-    // if revealed and autoOpen is true, attempt chord
     if(cell.revealed && UI.autoOpenChk.checked) chord(i);
     return;
   }
-  // start timer on first action
-  if(!state.started){ state.started = true; startTimer(); }
-  // if mine -> lose
+  if(!state.started){ state.started=true; startTimer(); }
   if(cell.mine){
-    // reveal mine and end
+    // clicked a mine: reveal all and lose
     revealMine(i);
     endGame(false);
-    playSound('boom');
     return;
   }
-  // save last action for undo (simple)
-  state.lastAction = {type:'reveal', indices:[]};
+  // normal reveal
   floodReveal(i);
-  playSound('click');
   checkWin();
   updateBoardVisuals();
 }
-
-/* Toggle flag */
 function toggleFlag(i){
   if(state.gameOver) return;
   const cell = state.grid[i];
   if(cell.revealed) return;
   cell.flagged = !cell.flagged;
   state.flagsLeft += cell.flagged ? -1 : 1;
-  state.lastAction = {type:'flag', idx:i};
+  logAudit('flag_toggled', `idx:${i} flagged:${cell.flagged}`);
   updateBoardVisuals();
   checkWin();
 }
-
-/* Reveal neighbors only if flagged neighbors count equals number */
 function chord(i){
-  const cell = state.grid[i];
-  if(!cell.revealed || cell.num===0) return;
-  const [r,c] = idxToRC(i);
-  let flagged = 0, toReveal = [];
-  for(let dr=-1; dr<=1; dr++) for(let dc=-1; dc<=1; dc++){
+  const c = state.grid[i];
+  if(!c.revealed || c.num===0) return;
+  const [r,c0] = idxToRC(i);
+  let flagged=0, toReveal=[];
+  for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
     if(dr===0 && dc===0) continue;
-    const nr=r+dr, nc=c+dc;
+    const nr=r+dr, nc=c0+dc;
     if(nr>=0 && nr<state.rows && nc>=0 && nc<state.cols){
       const idx = rcToIdx(nr,nc);
       if(state.grid[idx].flagged) flagged++;
       else if(!state.grid[idx].revealed) toReveal.push(idx);
     }
   }
-  if(flagged === cell.num){
-    // reveal safe ones
-    state.lastAction = {type:'reveal', indices:[]};
-    toReveal.forEach(i => {
-      if(state.grid[i].mine){ revealMine(i); endGame(false); playSound('boom'); return; }
-      floodReveal(i);
-    });
-    playSound('click');
-    checkWin();
+  if(flagged === state.grid[i].num){
+    for(const idx of toReveal){
+      if(state.grid[idx].mine){ revealMine(idx); endGame(false); return; }
+      floodReveal(idx);
+    }
     updateBoardVisuals();
   }
 }
-
-/* Reveal a mine and show all mines */
-function revealMine(clickedIdx){
+function revealMine(clicked){
+  // reveal all mines visually and mark clicked cell red; this is a losing reveal
   for(let i=0;i<state.grid.length;i++){
-    if(state.grid[i].mine){
-      state.grid[i].revealed = true;
-    }
+    if(state.grid[i].mine) state.grid[i].revealed = true;
   }
-  // highlight clicked mine specially (we'll rely on CSS inline changes)
-  const clickedEl = UI.boardEl.querySelector(`.cell[data-idx='${clickedIdx}']`);
-  if(clickedEl) clickedEl.style.background = 'linear-gradient(180deg, rgba(255,0,0,0.09), rgba(255,0,0,0.02))';
+  const el = UI.boardEl.querySelector(`.cell[data-idx='${clicked}']`);
+  if(el) el.style.background = 'linear-gradient(180deg, rgba(255,0,0,0.09), rgba(255,0,0,0.02))';
   state.gameOver = true;
   stopTimer();
 }
-
-/* Flood reveal for zero cells using BFS */
-function floodReveal(idx){
-  const q=[idx], visited=new Set();
+function floodReveal(startIdx){
+  const q = [startIdx], visited = new Set();
   while(q.length){
     const cur = q.shift();
-    const cell = state.grid[cur];
-    if(cell.revealed || cell.flagged) continue;
-    cell.revealed = true;
-    visited.add(cur);
+    if(visited.has(cur)) continue;
+    const c = state.grid[cur];
+    if(c.revealed || c.flagged) continue;
+    c.revealed = true;
     state.revealedCount++;
-    state.lastAction.indices.push(cur);
-    if(cell.num === 0 && !cell.mine){
-      const [r,c] = idxToRC(cur);
-      for(let dr=-1; dr<=1; dr++) for(let dc=-1; dc<=1; dc++){
+    visited.add(cur);
+    if(c.num === 0 && !c.mine){
+      const [r,cc] = idxToRC(cur);
+      for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
         if(dr===0 && dc===0) continue;
-        const nr=r+dr, nc=c+dc;
-        if(nr>=0 && nr<state.rows && nc>=0 && nc<state.cols){
+        const nr=r+dr, nc=cc+dc;
+        if(nr>=0 && nr<state.rows && nc>=0 && nc<state.cols) {
           const ni = rcToIdx(nr,nc);
-          if(!visited.has(ni) && !state.grid[ni].revealed && !state.grid[ni].flagged) q.push(ni);
+          if(!visited.has(ni) && !state.grid[ni].flagged) q.push(ni);
         }
       }
     }
   }
 }
 
-/* ----------------------
-   Hint (reveal one safe random unrevealed non-mine)
-   ---------------------- */
+/* -------------------- Hints -------------------- */
 function useHint(){
-  if(state.hintCount <=0 || state.gameOver) return;
+  if(state.hintCount <= 0 || state.gameOver) return;
   for(let i=0;i<state.grid.length;i++){
-    if(!state.grid[i].revealed && !state.grid[i].mine && !state.grid[i].flagged){
-      // reveal first safe cell we find (could be random)
+    const c = state.grid[i];
+    if(!c.revealed && !c.mine && !c.flagged){
       if(!state.started){ state.started=true; startTimer(); }
       floodReveal(i);
       state.hintCount--;
-      playSound('click');
+      logAudit('hint_used', `idx:${i}`);
       updateBoardVisuals();
       checkWin();
       return;
@@ -547,278 +675,264 @@ function useHint(){
   }
 }
 
-/* ----------------------
-   Win/Lose check
-   ---------------------- */
+/* -------------------- Win/Lose -------------------- */
 function checkWin(){
   const total = state.rows * state.cols;
   if(state.revealedCount === total - state.mines){
     endGame(true);
   }
 }
-
 function endGame(won){
   state.gameOver = true;
   state.won = won;
   stopTimer();
   if(won){
-    UI.statusTextEl.textContent = `You win! ${state.elapsed}s`;
-    confettiBurst();
-    playSound('win');
-    // mark remaining mines as flags visually
-    for(let i=0;i<state.grid.length;i++) if(state.grid[i].mine && !state.grid[i].flagged) state.grid[i].flagged = true;
-    updateBoardVisuals();
-    // update leaderboard
-    saveToLeaderboard();
+    UI.statusText.textContent = `You win! ${state.elapsed}s`;
+    if(isAdmin() ? document.getElementById('confettiToggle').checked : true) confettiBurst();
+    addLeaderboardEntry(UI.modeSelect.value, UI.playerName.value || 'Anon', state.elapsed);
+    logAudit('game_win', `${state.elapsed}s`);
   } else {
-    UI.statusTextEl.textContent = 'Boom! You lost';
-    updateBoardVisuals();
+    UI.statusText.textContent = 'Boom! You lost';
+    logAudit('game_lost', '');
   }
+  updateBoardVisuals();
 }
 
-/* ----------------------
-   Undo (very simple: undo last reveal set or flag)
-   ---------------------- */
-function undoLast(){
-  if(!state.lastAction) return;
-  const act = state.lastAction;
-  if(act.type === 'reveal'){
-    // hide those revealed cells (but only if game not over)
-    act.indices.forEach(i => { state.grid[i].revealed = false; state.revealedCount = Math.max(0, state.revealedCount-1); });
-    updateBoardVisuals();
-  } else if(act.type === 'flag'){
-    const i = act.idx;
-    state.grid[i].flagged = !state.grid[i].flagged;
-    state.flagsLeft += state.grid[i].flagged ? -1 : 1;
-    updateBoardVisuals();
+/* -------------------- Soft reveal (admin-only) -------------------- */
+function setSoftReveal(enabled){
+  state.softReveal = enabled;
+  logAudit('soft_reveal', `enabled:${enabled}`);
+  updateBoardVisuals();
+}
+
+/* -------------------- Undo (basic) -------------------- */
+let lastAction = null;
+function saveLastAction(action){ lastAction = action; }
+function undo(){
+  if(!lastAction) return;
+  if(lastAction.type === 'reveal'){
+    lastAction.indices.forEach(i=> { if(state.grid[i]) { state.grid[i].revealed=false; state.revealedCount = Math.max(0, state.revealedCount-1); } });
+  } else if(lastAction.type==='flag'){
+    const idx = lastAction.idx;
+    if(state.grid[idx]) { state.grid[idx].flagged = !state.grid[idx].flagged; state.flagsLeft += state.grid[idx].flagged ? -1 : 1; }
   }
-  state.lastAction = null;
+  lastAction = null;
+  updateBoardVisuals();
 }
 
-/* ----------------------
-   Leaderboard (localStorage)
-   ---------------------- */
-function loadLeaderboard(){
-  const raw = localStorage.getItem(CONF.leaderboardKey);
-  if(!raw) return {};
-  try{ return JSON.parse(raw); }catch(e){ return {}; }
-}
-function saveLeaderboard(lb){
-  localStorage.setItem(CONF.leaderboardKey, JSON.stringify(lb));
-}
-function saveToLeaderboard(){
-  const lb = loadLeaderboard();
-  const modeKey = UI.modeSelect.value;
-  const name = (UI.playerNameInput.value || 'Anonymous').slice(0,20);
-  if(!lb[modeKey]) lb[modeKey]=[];
-  lb[modeKey].push({name, time: state.elapsed, date: (new Date()).toISOString()});
-  // keep only top 10 sorted by time
-  lb[modeKey].sort((a,b)=>a.time-b.time);
-  lb[modeKey] = lb[modeKey].slice(0,10);
-  saveLeaderboard(lb);
-  renderLeaderboard();
-}
-function renderLeaderboard(){
-  const lb = loadLeaderboard();
-  const modeKey = UI.modeSelect.value;
-  UI.leaderboardEl.innerHTML = '';
-  const entries = lb[modeKey] || [];
-  if(entries.length===0){
-    const p = document.createElement('div'); p.style.color='var(--muted)'; p.textContent = 'No times yet — be the first!'; UI.leaderboardEl.appendChild(p); return;
-  }
-  entries.forEach((e, idx) => {
-    const row = document.createElement('div'); row.className='lb-item';
-    row.innerHTML = `<div>${idx+1}. ${escapeHtml(e.name)}</div><div style="font-weight:800">${e.time}s</div>`;
-    UI.leaderboardEl.appendChild(row);
-  });
-}
-
-/* Simple HTML escape */
-function escapeHtml(s){ return s.replace(/[&<>"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]); }
-
-/* ----------------------
-   Copy Result (shareable text)
-   ---------------------- */
+/* -------------------- Copy result -------------------- */
 function copyResult(){
   if(!state.started) return;
-  const modeKey = UI.modeSelect.value;
   const modeName = UI.modeSelect.options[UI.modeSelect.selectedIndex].text.split('—')[0].trim();
-  const text = `Minesight Pro ${modeName} — ${state.won ? 'Win' : 'Loss'} — Time: ${state.elapsed}s — Board: ${state.rows}x${state.cols} • #Mines: ${state.mines}`;
-  navigator.clipboard?.writeText(text).then(()=> {
-    UI.copyResultBtn.textContent = 'Copied!';
-    setTimeout(()=> UI.copyResultBtn.textContent = 'Copy Result', 1500);
-  }).catch(()=> {
-    alert('Copy failed — your browser may not allow clipboard writes.');
-  });
+  const txt = `Minesight Pro ${modeName} — ${state.won? 'Win' : 'Loss'} — ${state.elapsed}s — ${state.rows}x${state.cols} • ${state.mines} mines`;
+  navigator.clipboard?.writeText(txt).then(()=> {
+    UI.copyResult.textContent = 'Copied!';
+    setTimeout(()=> UI.copyResult.textContent = 'Copy Result', 1400);
+  }).catch(()=> alert('Copy failed'));
 }
 
-/* ----------------------
-   Show mines (debug/learn)
-   ---------------------- */
-function revealAllMines(){
-  for(let i=0;i<state.grid.length;i++) if(state.grid[i].mine) state.grid[i].revealed = true;
-  state.gameOver = true; stopTimer(); updateBoardVisuals();
-}
-
-/* ----------------------
-   Keyboard navigation (arrows move focused index)
-   ---------------------- */
+/* -------------------- Keyboard navigation -------------------- */
+let focusedIdx = 0;
 document.addEventListener('keydown', (e)=>{
-  const k = e.key;
-  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k)){
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
     e.preventDefault();
-    moveFocusByKey(k);
-    return;
+    moveFocus(e.key);
   }
-  if(k.toLowerCase()==='f'){
-    // toggle flag on focused
-    const el = UI.boardEl.querySelector(`.cell[data-idx='${state.focusedIdx}']`);
-    if(el) toggleFlag(state.focusedIdx);
-  }
-  if(k==='Enter' || k===' '){
-    const el = UI.boardEl.querySelector(`.cell[data-idx='${state.focusedIdx}']`);
-    if(el) onCellClick(state.focusedIdx, null);
-  }
-  if(k==='F2' || (e.ctrlKey && k.toLowerCase()==='r')){ e.preventDefault(); startGameFromUI(); }
-  if(e.ctrlKey && k.toLowerCase()==='z'){ e.preventDefault(); undoLast(); }
+  if(e.key.toLowerCase()==='f'){ e.preventDefault(); toggleFlag(focusedIdx); }
+  if(e.key==='Enter' || e.key===' '){ e.preventDefault(); onCellClick(focusedIdx); }
+  if(e.ctrlKey && e.key.toLowerCase()==='r'){ e.preventDefault(); startGameFromUI(); }
+  if(e.ctrlKey && e.key.toLowerCase()==='z'){ e.preventDefault(); undo(); }
 });
-
-/* move focus and set tabindex */
-function moveFocusByKey(key){
-  const {rows, cols} = state;
-  let [r,c] = idxToRC(state.focusedIdx);
-  if(key==='ArrowUp') r = Math.max(0, r-1);
-  if(key==='ArrowDown') r = Math.min(rows-1, r+1);
-  if(key==='ArrowLeft') c = Math.max(0, c-1);
-  if(key==='ArrowRight') c = Math.min(cols-1, c+1);
-  const idx = rcToIdx(r,c);
-  setCellFocus(idx);
-}
-function setCellFocus(idx){
-  state.focusedIdx = idx;
-  const el = UI.boardEl.querySelector(`.cell[data-idx='${idx}']`);
+function moveFocus(key){
+  const [r,c] = idxToRC(focusedIdx);
+  let nr=r, nc=c;
+  if(key==='ArrowUp') nr = Math.max(0, r-1);
+  if(key==='ArrowDown') nr = Math.min(state.rows-1, r+1);
+  if(key==='ArrowLeft') nc = Math.max(0, c-1);
+  if(key==='ArrowRight') nc = Math.min(state.cols-1, c+1);
+  focusedIdx = rcToIdx(nr,nc);
+  const el = UI.boardEl.querySelector(`.cell[data-idx='${focusedIdx}']`);
   if(el) el.focus();
 }
 
-/* ----------------------
-   Confetti (no external libs)
-   ---------------------- */
-const confettiCanvas = document.getElementById('confetti');
+/* -------------------- Confetti (simple) -------------------- */
+const confettiCanvas = document.getElementById('confettiCanvas');
 confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight;
 window.addEventListener('resize', ()=> { confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; });
-let confettiPieces = [];
 function confettiBurst(){
-  confettiPieces = [];
   const ctx = confettiCanvas.getContext('2d');
+  const pieces = [];
   const colors = ['#2b7cff','#ffb400','#ff4d4f','#10b981','#7c3aed'];
   for(let i=0;i<120;i++){
-    confettiPieces.push({
-      x: Math.random()*confettiCanvas.width,
-      y: -20 - Math.random()*200,
-      vx: (Math.random()-0.5)*6,
-      vy: Math.random()*6 + 2,
-      size: Math.random()*8+6,
-      color: colors[Math.floor(Math.random()*colors.length)],
-      rot: Math.random()*360,
-      rotSpeed: Math.random()*8-4,
-      life: 200 + Math.random()*200
-    });
+    pieces.push({x:Math.random()*confettiCanvas.width, y:-Math.random()*200, vx:(Math.random()-0.5)*6, vy:Math.random()*6+2, size:Math.random()*8+6, color:colors[Math.floor(Math.random()*colors.length)], rot:Math.random()*360, rotS:Math.random()*8-4, life:200 + Math.random()*300});
   }
-  let t0 = null;
+  let last = performance.now();
   function frame(ts){
-    if(!t0) t0 = ts;
-    const dt = ts - t0; t0 = ts;
+    const dt = ts - last; last = ts;
     ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
-    confettiPieces.forEach(p => {
-      p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.rotSpeed; p.life -= dt;
-      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot*Math.PI/180);
+    for(let p of pieces){
+      p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.rotS; p.life -= dt;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
       ctx.fillStyle = p.color; ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6);
       ctx.restore();
-    });
-    confettiPieces = confettiPieces.filter(p => p.life>0 && p.y < confettiCanvas.height + 50);
-    if(confettiPieces.length) requestAnimationFrame(frame); else ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+    }
+    if(pieces.some(p=>p.life>0 && p.y < confettiCanvas.height+50)) requestAnimationFrame(frame); else ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
   }
   requestAnimationFrame(frame);
 }
 
-/* ----------------------
-   UI wiring & event listeners
-   ---------------------- */
-UI.modeSelect.addEventListener('change', ()=> {
-  const m = UI.modeSelect.value;
-  UI.customControls.style.display = m==='custom' ? 'block' : 'none';
-  renderLeaderboard();
-});
-UI.themeSelect.addEventListener('change', ()=>{
-  const t = UI.themeSelect.value;
-  document.documentElement.setAttribute('data-theme', t==='dark' ? 'dark' : 'light');
-});
-UI.restartBtn.addEventListener('click', startGameFromUI);
-UI.newGameTop.addEventListener('click', startGameFromUI);
-UI.showMinesBtn.addEventListener('click', revealAllMines);
-UI.copyResultBtn.addEventListener('click', copyResult);
-UI.toggleHintsBtn.addEventListener('click', ()=> { state.hintCount = CONF.maxHints; updateBoardVisuals(); });
-UI.hintBtn.addEventListener('click', ()=> useHint());
-UI.clearLBBtn.addEventListener('click', ()=> { if(confirm('Clear leaderboard?')) { localStorage.removeItem(CONF.leaderboardKey); renderLeaderboard(); }});
-UI.compactToggle.addEventListener('change', ()=> { state.compact = UI.compactToggle.checked; renderBoard(); });
-UI.compactViewBtn.addEventListener('click', ()=> { state.compact = !state.compact; renderBoard(); });
-UI.showMinesBtn.addEventListener('dblclick', ()=> { localStorage.removeItem(CONF.leaderboardKey); renderLeaderboard(); }); // hidden shortcut - dblclick clears LB
+/* -------------------- Admin: auth + UI -------------------- */
+function openLogin(){ UI.loginModal.classList.add('open'); UI.loginModal.setAttribute('aria-hidden','false'); UI.loginUser.focus(); }
+function closeLogin(){ UI.loginModal.classList.remove('open'); UI.loginModal.setAttribute('aria-hidden','true'); UI.loginUser.value=''; UI.loginPass.value=''; }
+function openAdmin(){ UI.adminModal.classList.add('open'); UI.adminModal.setAttribute('aria-hidden','false'); renderAudit(); }
+function closeAdmin(){ UI.adminModal.classList.remove('open'); UI.adminModal.setAttribute('aria-hidden','true'); }
 
-UI.undoBtn.addEventListener('click', ()=> undoLast());
-
-/* Keyboard: focus board when clicked so arrow keys work */
-UI.boardWrap.addEventListener('click', ()=> {
-  const first = UI.boardEl.querySelector('.cell');
-  if(first) { first.focus(); const idx = parseInt(first.getAttribute('data-idx')); setCellFocus(0); }
+UI.openAdminBtn.addEventListener('click', ()=>{
+  if(isAdmin()){ openAdmin(); return; }
+  openLogin();
 });
+UI.loginCancel.addEventListener('click', closeLogin);
+UI.loginSubmit.addEventListener('click', ()=>{
+  const u = UI.loginUser.value.trim();
+  const p = UI.loginPass.value;
+  // demo credentials
+  if(u==='Sam' && p==='test'){ setAdminSession('Sam'); closeLogin(); openAdmin(); UI.adminBadge.style.display='inline-block'; UI.adminUserBadge.textContent='Sam'; renderAudit(); }
+  else { alert('Invalid credentials'); }
+});
+UI.adminLogout.addEventListener('click', ()=> { clearAdminSession(); closeAdmin(); });
 
-/* ----------------------
-   Initialize & Start Game
-   ---------------------- */
-function startGameFromUI(){
-  const mode = UI.modeSelect.value;
-  let r,c,m;
+/* admin actions */
+UI.adminApply.addEventListener('click', ()=>{
+  const mode = UI.adminMode.value;
   if(mode==='custom'){
-    r = Math.max(5, Math.min(40, parseInt(UI.rowsInput.value || 9)));
-    c = Math.max(5, Math.min(60, parseInt(UI.colsInput.value || 9)));
-    m = Math.max(1, Math.min(r*c-1, parseInt(UI.minesInput.value || 10)));
+    const r = parseInt(UI.adminRows.value||9), c = parseInt(UI.adminCols.value||9), m = parseInt(UI.adminMines.value||10);
+    createGrid(r,c,m); renderBoard();
+    logAudit('admin_apply_custom', `${r}x${c} m:${m}`);
   } else {
-    const cfg = CONF.modes[mode];
-    r = cfg.rows; c = cfg.cols; m = cfg.mines;
+    const map = {beginner:[9,9,10], intermediate:[16,16,40], expert:[16,30,99]};
+    const [r,c,m] = map[mode];
+    createGrid(r,c,m); renderBoard();
+    logAudit('admin_apply_preset', mode);
   }
-  createGrid(r,c,m);
+});
+UI.adminStart.addEventListener('click', ()=> { startGameFromUI(); logAudit('admin_start_game',''); });
+
+UI.softRevealToggle.addEventListener('change', (e)=> { if(!isAdmin()){ alert('Admin only'); UI.softRevealToggle.checked = false; return; } setSoftReveal(e.target.checked); });
+UI.confettiToggle.addEventListener('change', ()=> logAudit('admin_set_confetti', UI.confettiToggle.checked));
+UI.muteToggle.addEventListener('change', ()=> logAudit('admin_set_mute', UI.muteToggle.checked));
+
+UI.adminExportConfig.addEventListener('click', ()=>{
+  if(!isAdmin()) return alert('Admin only');
+  const cfg = {rows:state.rows, cols:state.cols, mines:state.mines, softReveal:state.softReveal, confetti:UI.confettiToggle.checked, mute:UI.muteToggle.checked};
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='minesight_admin_config.json'; a.click();
+  URL.revokeObjectURL(url);
+  logAudit('admin_export_config','');
+});
+UI.adminImportBtn.addEventListener('click', ()=> UI.adminImportFile.click());
+UI.adminImportFile.addEventListener('change', (ev)=>{
+  const f = ev.target.files[0]; if(!f) return;
+  const r = new FileReader(); r.onload = ()=> {
+    try{
+      const cfg = JSON.parse(r.result);
+      if(cfg.rows && cfg.cols && cfg.mines){ createGrid(cfg.rows, cfg.cols, cfg.mines); renderBoard(); UI.confettiToggle.checked = !!cfg.confetti; UI.muteToggle.checked = !!cfg.mute; if(cfg.softReveal) UI.softRevealToggle.checked=true; setSoftReveal(!!cfg.softReveal); logAudit('admin_import_config',''); }
+      else alert('Invalid config file');
+    }catch(e){ alert('Import error'); }
+  }; r.readAsText(f);
+});
+
+UI.exportLB.addEventListener('click', ()=>{
+  const blob = new Blob([localStorage.getItem(CONF.leaderboardKey) || '{}'], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='minesight_leaderboard.json'; a.click();
+  URL.revokeObjectURL(url);
+  logAudit('admin_export_lb','');
+});
+UI.clearLBAdmin.addEventListener('click', ()=> { if(confirm('Clear leaderboard?')) { clearLeaderboard(); logAudit('admin_clear_lb',''); }});
+UI.simulateBtn.addEventListener('click', ()=> { simulateData(); logAudit('admin_simulate',''); });
+UI.forceRevealBtn.addEventListener('click', ()=> { if(confirm('Force reveal mines and lose the game?')){ revealMineForce(); logAudit('admin_force_reveal',''); }});
+UI.resetAuditBtn.addEventListener('click', ()=> { if(confirm('Clear audit log?')) { localStorage.removeItem(CONF.auditKey); renderAudit(); logAudit('admin_clear_audit',''); }});
+UI.closeAdmin.addEventListener('click', closeAdmin);
+
+/* -------------------- Other UI wiring -------------------- */
+UI.modeSelect.addEventListener('change', ()=>{
+  UI.customControls.style.display = UI.modeSelect.value==='custom' ? 'block' : 'none';
+});
+UI.startBtn.addEventListener('click', startGameFromUI);
+UI.newGameTop.addEventListener('click', startGameFromUI);
+UI.showMinesButton.addEventListener('click', ()=>{
+  if(!isAdmin()){ openLogin(); return; }
+  const enabled = !state.softReveal;
+  UI.softRevealToggle.checked = enabled;
+  setSoftReveal(enabled);
+});
+UI.hintBtn.addEventListener('click', useHint);
+UI.copyResult.addEventListener('click', copyResult);
+UI.resetHints.addEventListener('click', ()=> { state.hintCount = CONF.defaultHints; updateBoardVisuals(); logAudit('admin_reset_hints',''); });
+UI.clearLBBtn.addEventListener('click', ()=> { if(confirm('Clear leaderboard?')) clearLeaderboard(); });
+UI.undoBtn.addEventListener('click', ()=> undo());
+UI.themeSelect.addEventListener('change', ()=> { document.documentElement.setAttribute('data-theme', UI.themeSelect.value==='dark' ? 'dark' : 'light'); });
+
+/* -------------------- Simulate data (admin-only helper) -------------------- */
+function simulateData(){
+  if(!isAdmin()) return alert('Admin only');
+  const mode = UI.modeSelect.value;
+  for(let i=0;i<6;i++){
+    addLeaderboardEntry(mode, `SimUser${Math.floor(Math.random()*999)}`, Math.floor(Math.random()*300)+10);
+  }
+}
+
+/* -------------------- Force reveal (admin-only) - lose -------------------- */
+function revealMineForce(){
+  for(let i=0;i<state.grid.length;i++) if(state.grid[i].mine) state.grid[i].revealed = true;
+  state.gameOver = true; stopTimer(); updateBoardVisuals(); UI.statusText.textContent='Admin forced reveal — lost';
+}
+
+/* -------------------- Start logic from UI -------------------- */
+function startGameFromUI(){
+  const m = UI.modeSelect.value;
+  if(m==='custom'){
+    const r = Math.max(5, Math.min(80, parseInt(UI.rowsInput.value || 9)));
+    const c = Math.max(5, Math.min(120, parseInt(UI.colsInput.value || 9)));
+    const mines = Math.max(1, Math.min(r*c-1, parseInt(UI.minesInput.value || 10)));
+    createGrid(r,c,mines);
+  } else {
+    const map = {beginner:[9,9,10], intermediate:[16,16,40], expert:[16,30,99]};
+    const [r,c,mines] = map[m];
+    createGrid(r,c,mines);
+  }
   state.compact = UI.compactToggle.checked;
+  state.autoOpen = UI.autoOpenChk.checked;
   renderBoard();
-  UI.statusTextEl.textContent = 'Ready';
+  UI.statusText.textContent = 'Ready';
   renderLeaderboard();
-  // focus top-left cell
-  setCellFocus(0);
+  logAudit('game_start', `${state.rows}x${state.cols} mines:${state.mines}`);
 }
 
-/* update UI after resetting grid */
-function updateUIAfterReset(){
-  UI.flagCountEl.textContent = `Flags: ${state.mines - state.flagsLeft}`;
-  UI.mineCountEl.textContent = `Mines: ${state.mines}`;
-  UI.timerEl.textContent = `Time: ${state.elapsed}s`;
-  UI.hintBtn.textContent = `Hint (${state.hintCount})`;
-  UI.statusTextEl.textContent = 'Ready';
-}
+/* -------------------- Export / Import helpers (used above) -------------------- */
+/* implemented inline in admin handlers */
 
-/* ----------------------
-   Initialize app on load
-   ---------------------- */
+/* -------------------- Initialization -------------------- */
 (function init(){
-  // default mode
   UI.modeSelect.value = 'beginner';
   createGrid(9,9,10);
   renderBoard();
   renderLeaderboard();
-  // keyboard shortcuts for developer convenience
-  document.addEventListener('keydown', (e)=>{
-    if(e.key==='F1'){ e.preventDefault(); alert('Minesight Pro — Keyboard help:\\nArrow keys = move focus\\nEnter/Space = reveal\\nF = flag'); }
-  });
+  renderAudit();
+  // restore admin session if exists
+  const session = sessionStorage.getItem(CONF.adminSessionKey);
+  if(session){ UI.adminBadge.style.display='inline-block'; UI.adminUserBadge.textContent = JSON.parse(session).user; }
+  // accessibility: focus first cell on board click
+  UI.boardEl.addEventListener('click', ()=> { const first = UI.boardEl.querySelector('.cell'); if(first) { first.focus(); focusedIdx = parseInt(first.getAttribute('data-idx')); }});
 })();
+function renderAudit(){ if(UI.auditLogEl) { const raw=localStorage.getItem(CONF.auditKey); UI.auditLogEl.innerHTML = ''; (raw?JSON.parse(raw):[]).slice(0,200).forEach(a=>{ const d=document.createElement('div'); d.style.padding='6px'; d.style.borderBottom='1px solid rgba(0,0,0,0.04)'; d.style.fontSize='13px'; d.style.color='var(--muted)'; d.textContent=`${a.ts} — ${a.action} ${a.detail ? ' — ' + a.detail : ''}`; UI.auditLogEl.appendChild(d); }); }}
 
+/* -------------------- Helpers -------------------- */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]); }
+function rcToIdx(r,c){ return r*state.cols + c; }
+
+/* -------------------- End of script -------------------- */
 </script>
 </body>
 </html>
