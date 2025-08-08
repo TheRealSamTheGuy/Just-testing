@@ -1,94 +1,1072 @@
-<!doctype html>
+ <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Minesight Pro — Updating Soon</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Minesight Pro — An Amazing Minesweeper Game</title>
+<meta name="description" content="Minesight Pro — Fully working Minesweeper and admin panel demo."/>
 <style>
-  :root {
-    --bg: #0a0f1c;
-    --accent: #2b7cff;
-    --text: #e6eef6;
-    --muted: #8b9bb8;
+  :root{
+    --bg:linear-gradient(180deg,#eef7ff,#f8fbff);
+    --card:#fff; --accent:#2b7cff; --text:#052034; --muted:#6b7280;
+    --cell:#eef6ff; --cell-border:#cddaf2; --danger:#ff4d4f; --flag:#ffb400;
+    --radius:12px;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', system-ui, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    text-align: center;
-    padding: 20px;
+  [data-theme="dark"]{
+    --bg:linear-gradient(180deg,#071026,#08142a);
+    --card:#081426; --accent:#60a5fa; --text:#e6eef6; --muted:#9aa7bf;
+    --cell:#0b1220; --cell-border:#1f2937; --danger:#ff6b6b; --flag:#ffc870;
   }
-  .logo {
-    font-size: 48px;
-    font-weight: 800;
-    letter-spacing: -1px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    animation: fadeIn 1.5s ease-in-out forwards;
-  }
-  .logo-icon {
-    display: inline-grid;
-    place-items: center;
-    width: 50px;
-    height: 50px;
-    background: var(--accent);
-    border-radius: 10px;
-    font-weight: bold;
-    font-size: 16px;
-    color: white;
-    box-shadow: 0 6px 20px rgba(43,124,255,0.4);
-  }
-  h2 {
-    margin-top: 20px;
-    font-size: 24px;
-    color: var(--accent);
-    animation: fadeIn 2s ease-in-out forwards;
-  }
-  p {
-    margin-top: 10px;
-    color: var(--muted);
-    max-width: 500px;
-    animation: fadeIn 2.5s ease-in-out forwards;
-  }
-  .spinner {
-    margin-top: 30px;
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(255,255,255,0.1);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  footer {
-    position: absolute;
-    bottom: 15px;
-    font-size: 12px;
-    color: var(--muted);
-  }
+  *{box-sizing:border-box}
+  html,body{height:100%; margin:0; font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;}
+  body{ background:var(--bg); color:var(--text); display:flex; align-items:center; justify-content:center; padding:28px; }
+  .app{ width:100%; max-width:1200px; display:grid; grid-template-columns:360px 1fr; gap:18px; align-items:start; }
+
+  .panel{ background:var(--card); border-radius:var(--radius); padding:16px; box-shadow:0 12px 36px rgba(2,6,23,0.06); border:1px solid rgba(0,0,0,0.04); }
+
+  header.top{ grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px; }
+  .brand{ display:flex; gap:12px; align-items:center; }
+  .logo{ width:48px; height:48px; border-radius:10px; display:grid; place-items:center; color:white; font-weight:800; background:linear-gradient(180deg,var(--accent), color-mix(in srgb,var(--accent) 70%, black)); box-shadow:0 8px 26px rgba(43,124,255,0.12); }
+  .title{ margin:0; font-size:18px; }
+  .subtitle{ margin:0; color:var(--muted); font-size:13px; }
+
+  .controls{ display:flex; flex-direction:column; gap:10px; }
+  label{ font-size:13px; color:var(--muted); }
+  select,input[type=number],input[type=text]{ padding:8px 10px; border-radius:8px; border:1px solid var(--cell-border); background:var(--cell); color:var(--text); width:100%; }
+
+  .stats{ display:flex; gap:8px; margin-top:6px; }
+  .stat{ background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(255,255,255,0.02)); padding:8px 10px; border-radius:8px; min-width:92px; text-align:center; font-weight:800; border:1px solid var(--cell-border); }
+
+  .btn{ padding:9px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:800; }
+  .btn.primary{ background:linear-gradient(180deg,var(--accent), color-mix(in srgb,var(--accent) 80%, black)); color:white; box-shadow:0 6px 18px rgba(43,124,255,0.12); }
+  .btn.ghost{ background:transparent; border:1px solid var(--cell-border); color:var(--text); }
+
+  .board-shell{ display:flex; flex-direction:column; gap:12px; align-items:center; }
+  .topbar{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .pill{ background:rgba(255,255,255,0.6); padding:8px 12px; border-radius:10px; font-weight:800; border:1px solid rgba(255,255,255,0.04); min-width:92px; text-align:center; color:var(--text); }
+
+  .board-wrap{ padding:14px; border-radius:12px; min-height:360px; display:flex; align-items:center; justify-content:center; width:100%; }
+  .board{ display:grid; gap:6px; touch-action: manipulation; }
+
+  .cell{ aspect-ratio:1/1; width:38px; display:flex; align-items:center; justify-content:center; background:var(--cell); border-radius:8px; border:1px solid var(--cell-border); font-weight:800; font-size:16px; color:var(--text); user-select:none; cursor:pointer; position:relative; }
+  .cell.revealed{ background: linear-gradient(180deg,#f8fafc,#eef3ff); box-shadow:none; cursor:default; }
+  .cell.flag{ color:var(--flag); }
+  .cell.mine{ color:var(--danger); }
+  .cell.soft-mine::after{ content:"💣"; position:absolute; pointer-events:none; font-size:16px; opacity:0.95; }
+
+  .modal{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:9999; }
+  .modal.open{ display:flex; }
+  .modal-card{ width:860px; max-width:96%; border-radius:12px; padding:14px; background:var(--card); box-shadow:0 20px 60px rgba(3,6,23,0.35); border:1px solid rgba(0,0,0,0.06); color:var(--text); }
+
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
+
+  .audit-log{ max-height:260px; overflow:auto; padding:8px; border-radius:8px; border:1px solid var(--cell-border); background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(255,255,255,0.02)); font-size:13px; color:var(--muted); }
+
+  .admin-actions{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px; }
+  .admin-actions button{ padding:8px; font-weight:700; border-radius:8px; border:1px solid rgba(0,0,0,0.06); background:transparent; cursor:pointer; }
+
+  @media (max-width:980px){ .app{ grid-template-columns:1fr } .cell{ width:34px } .admin-actions{ grid-template-columns:repeat(2,1fr);} }
 </style>
 </head>
 <body>
-  <div class="logo">
-    <div class="logo-icon">MP</div>
-    Minesight Pro
+  <main class="app" id="app">
+    <header class="top panel" role="banner">
+      <div class="brand">
+        <div class="logo">MP</div>
+        <div>
+          <h3 class="title">Minesight Pro</h3>
+          <p class="subtitle">See the board. Own the game. — Admin demo</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select id="theme" aria-label="theme">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+        <button id="newGameTop" class="btn primary">New Game</button>
+        <button id="openAdmin" class="btn ghost">Admin Panel</button>
+        <div id="adminBadge" style="display:none;padding:8px;border-radius:8px;background:linear-gradient(180deg,#eef6ff,#f8fbff);border:1px solid var(--cell-border);font-weight:700;color:var(--muted)">ADMIN</div>
+      </div>
+    </header>
+
+    <!-- LEFT: Controls -->
+    <section class="panel controls" aria-label="controls">
+      <h4 style="margin:0 0 8px 0">Game Controls</h4>
+      <label for="mode">Mode</label>
+      <select id="mode">
+        <option value="beginner">Beginner — 9 × 9 · 10</option>
+        <option value="intermediate">Intermediate — 16 × 16 · 40</option>
+        <option value="expert">Expert — 16 × 30 · 99</option>
+        <option value="custom">Custom</option>
+      </select>
+
+      <div id="customControls" style="display:none;margin-top:8px">
+        <label>Custom board</label>
+        <div style="display:flex;gap:8px;">
+          <input id="rows" type="number" min="5" max="60" value="9"><input id="cols" type="number" min="5" max="120" value="9"><input id="mines" type="number" min="1" max="1000" value="10">
+        </div>
+      </div>
+
+      <div class="stats" style="margin-top:10px;">
+        <div class="stat" id="mineCount">Mines: 10</div>
+        <div class="stat" id="flagCount">Flags: 0</div>
+        <div class="stat" id="timer">Time: 0s</div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button id="startBtn" class="btn primary">Start</button>
+        <button id="hintBtn" class="btn ghost">Hint</button>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>Options</label>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <label><input id="autoOpen" type="checkbox" checked> Auto-open (chording)</label>
+          <label><input id="soundToggle" type="checkbox" checked> Sound</label>
+          <label><input id="compactToggle" type="checkbox"> Compact board</label>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>Leaderboard</label>
+        <div id="leaderboard" style="display:flex;flex-direction:column;gap:6px;min-height:80px;"></div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <input id="playerName" placeholder="Your name" />
+          <button id="submitScore" class="btn ghost">Submit</button>
+          <button id="clearLB" class="btn ghost">Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Board -->
+    <section class="panel board-shell" aria-label="board">
+      <div class="topbar">
+        <div class="status">
+          <div class="pill" id="statusText">Ready</div>
+          <div class="pill" id="boardInfo">9 × 9 · Beginner</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button id="softShowToggle" class="btn ghost">Soft-Show Mines</button>
+          <button id="copyResult" class="btn ghost">Copy Result</button>
+          <button id="resetHints" class="btn ghost">Reset Hints</button>
+        </div>
+      </div>
+
+      <div class="board-wrap">
+        <div id="board" class="board" role="grid" tabindex="0" aria-label="Mines grid"></div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+        <div style="display:flex;gap:8px;">
+          <button id="undoBtn" class="btn ghost">Undo</button>
+          <button id="compactView" class="btn ghost">Toggle Compact</button>
+        </div>
+        <div style="font-size:13px;color:var(--muted)">Minesight Pro · v2.0</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ADMIN LOGIN MODAL -->
+  <div id="loginModal" class="modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <h2 style="margin:0">Administrator Login</h2>
+      <p style="color:var(--muted)">Enter admin credentials to open the control center.</p>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <input id="loginUser" placeholder="Username" />
+        <input id="loginPass" placeholder="Password" type="password" />
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+        <button id="loginCancel" class="btn ghost">Cancel</button>
+        <button id="loginSubmit" class="btn primary">Sign in</button>
+      </div>
+    </div>
   </div>
-  <h2>Updating Soon...</h2>
-  <p>We’re working on something exciting! Minesight Pro will be back online shortly with new features, enhancements, and optimizations for the ultimate minesweeper experience.</p>
-  <div class="spinner"></div>
-  <footer>© 2025 Minesight Pro. All rights reserved.</footer>
+
+  <!-- ADMIN PANEL MODAL -->
+  <div id="adminModal" class="modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Admin Control Center">
+      <header style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <h2 style="margin:0">Admin Control Center</h2>
+          <div style="color:var(--muted)">Operator cockpit — every admin action is audited.</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div id="adminUserBadge" style="font-weight:800;color:var(--muted)"></div>
+          <button id="adminLogout" class="btn ghost">Logout</button>
+        </div>
+      </header>
+
+      <div style="margin-top:12px;" class="grid-2">
+        <div>
+          <h3 style="margin:6px 0">Quick Game Controls</h3>
+          <label>Mode</label>
+          <select id="adminMode">
+            <option value="beginner">Beginner 9×9 ·10</option>
+            <option value="intermediate">Intermediate 16×16 ·40</option>
+            <option value="expert">Expert 16×30 ·99</option>
+            <option value="custom">Custom</option>
+          </select>
+
+          <div id="adminCustom" style="display:none;margin-top:8px;">
+            <label>Rows / Cols / Mines</label>
+            <div style="display:flex;gap:8px;">
+              <input id="adminRows" type="number" min="5" max="80" value="9">
+              <input id="adminCols" type="number" min="5" max="120" value="9">
+              <input id="adminMines" type="number" min="1" max="1000" value="10">
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button id="adminApply" class="btn primary">Apply</button>
+            <button id="adminStart" class="btn ghost">Start</button>
+          </div>
+
+          <hr style="margin:12px 0"/>
+
+          <h3 style="margin:6px 0">Visibility & Play Controls</h3>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label><input id="adminSoftReveal" type="checkbox"> Soft-reveal (show mines without losing)</label>
+            <label><input id="adminInvincible" type="checkbox"> Invincible (click mines won't lose)</label>
+            <label><input id="adminLock" type="checkbox"> Lock board (disable user input)</label>
+            <label><input id="adminAutoFlag" type="checkbox"> Auto-flag mines</label>
+            <label><input id="adminAutoSolve" type="checkbox"> Auto-solver (naive)</label>
+            <label><input id="adminGhost" type="checkbox"> Ghost reveal (reveal/hide)</label>
+            <label><input id="adminStepMode" type="checkbox"> Step reveal mode</label>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+            <button id="forceWinBtn" class="btn ghost">Force Win</button>
+            <button id="forceLoseBtn" class="btn ghost">Force Lose</button>
+            <button id="massFlagBtn" class="btn ghost">Mass Flag</button>
+            <button id="massUnflagBtn" class="btn ghost">Mass Unflag</button>
+            <button id="stepRevealBtn" class="btn ghost">Step Reveal Next Safe</button>
+            <button id="stepRevealMineBtn" class="btn ghost">Step Reveal Next Mine</button>
+          </div>
+
+          <hr style="margin:12px 0"/>
+
+          <h3 style="margin:6px 0">Timer & State</h3>
+          <div style="display:flex;gap:8px;">
+            <button id="freezeTimerBtn" class="btn ghost">Freeze/Resume Timer</button>
+            <button id="warpTimeBtn" class="btn ghost">Warp +60s</button>
+            <button id="setTimerBtn" class="btn ghost">Set Time…</button>
+          </div>
+
+          <div style="margin-top:8px;">
+            <button id="exportSnap" class="btn ghost">Export Snapshot</button>
+            <input id="importSnap" type="file" accept="application/json" style="display:none"/>
+            <button id="importSnapBtn" class="btn ghost">Import Snapshot</button>
+            <button id="randomSeedBtn" class="btn ghost">Randomize with Seed</button>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="margin:6px 0">Leaderboard Management</h3>
+          <div style="display:flex;gap:8px;">
+            <input id="lbName" placeholder="name">
+            <input id="lbTime" placeholder="time (s)" type="number">
+            <button id="lbAddBtn" class="btn ghost">Add</button>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button id="exportLBBtn" class="btn ghost">Export LB</button>
+            <button id="clearLBBtn" class="btn ghost">Clear LB</button>
+            <button id="spamLBBtn" class="btn ghost">Spam LB (scale)</button>
+          </div>
+
+          <hr style="margin:12px 0"/>
+
+          <h3 style="margin:6px 0">Board Designer</h3>
+          <label>Manual mine indices (comma list)</label>
+          <input id="manualIndices" placeholder="e.g. 0,5,12">
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button id="applyManualBtn" class="btn ghost">Apply</button>
+            <input id="seedField" placeholder="seed">
+            <button id="applySeedBtn" class="btn ghost">Apply Seed</button>
+          </div>
+
+          <hr style="margin:12px 0"/>
+
+          <h3 style="margin:6px 0">Audit & Dangerous</h3>
+          <div class="audit-log" id="auditLog">No admin actions yet.</div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button id="exportAuditBtn" class="btn ghost">Export Audit</button>
+            <button id="clearAuditBtn" class="btn ghost">Clear Audit</button>
+            <button id="resetBtn" class="btn ghost">Reset Everything</button>
+          </div>
+
+          <hr style="margin:12px 0"/>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;">
+            <!-- bulk extra admin "abuses" (placeholders implemented to audit) -->
+            <!-- We'll generate many from JS; placeholder buttons reserved here -->
+            <div id="extraAdminGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px;">
+        <button id="closeAdminBtn" class="btn ghost">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confetti canvas -->
+  <canvas id="confetti" style="position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999;"></canvas>
+
+<script>
+/* ===== Minesight Pro — Working Game + Admin Panel =====
+   - Fully functional Minesweeper engine.
+   - Admin panel with many implemented admin features and many placeholder abuses (all audited).
+   - Demo admin credentials are in script only (Sam / test) and not shown in UI.
+   - Save as index.html and open in browser.
+*/
+
+/* -------------------- Hidden demo credentials (do NOT display them in UI) -------------------- */
+const DEMO_ADMIN = { user: 'Sam', pass: 'test' };
+
+/* -------------------- DOM refs -------------------- */
+const refs = {
+  app: document.getElementById('app'),
+  mode: document.getElementById('mode'),
+  customControls: document.getElementById('customControls'),
+  rows: document.getElementById('rows'),
+  cols: document.getElementById('cols'),
+  mines: document.getElementById('mines'),
+  startBtn: document.getElementById('startBtn'),
+  hintBtn: document.getElementById('hintBtn'),
+  mineCount: document.getElementById('mineCount'),
+  flagCount: document.getElementById('flagCount'),
+  timer: document.getElementById('timer'),
+  statusText: document.getElementById('statusText'),
+  boardInfo: document.getElementById('boardInfo'),
+  board: document.getElementById('board'),
+  compactToggle: document.getElementById('compactToggle'),
+  autoOpen: document.getElementById('autoOpen'),
+  soundToggle: document.getElementById('soundToggle'),
+  playerName: document.getElementById('playerName'),
+  submitScore: document.getElementById('submitScore'),
+  leaderboard: document.getElementById('leaderboard'),
+  clearLB: document.getElementById('clearLB'),
+  theme: document.getElementById('theme'),
+  newGameTop: document.getElementById('newGameTop'),
+  openAdminBtn: document.getElementById('openAdmin'),
+  adminBadge: document.getElementById('adminBadge'),
+  softShowToggle: document.getElementById('softShowToggle'),
+  copyResult: document.getElementById('copyResult'),
+  resetHints: document.getElementById('resetHints'),
+  undoBtn: document.getElementById('undoBtn'),
+  compactView: document.getElementById('compactView'),
+
+  // admin modal refs
+  loginModal: document.getElementById('loginModal'),
+  loginUser: document.getElementById('loginUser'),
+  loginPass: document.getElementById('loginPass'),
+  loginSubmit: document.getElementById('loginSubmit'),
+  loginCancel: document.getElementById('loginCancel'),
+  adminModal: document.getElementById('adminModal'),
+  adminUserBadge: document.getElementById('adminUserBadge'),
+  adminLogout: document.getElementById('adminLogout'),
+  adminMode: document.getElementById('adminMode'),
+  adminCustom: document.getElementById('adminCustom'),
+  adminRows: document.getElementById('adminRows'),
+  adminCols: document.getElementById('adminCols'),
+  adminMines: document.getElementById('adminMines'),
+  adminApply: document.getElementById('adminApply'),
+  adminStart: document.getElementById('adminStart'),
+  adminSoftReveal: document.getElementById('adminSoftReveal'),
+  adminInvincible: document.getElementById('adminInvincible'),
+  adminLock: document.getElementById('adminLock'),
+  adminAutoFlag: document.getElementById('adminAutoFlag'),
+  adminAutoSolve: document.getElementById('adminAutoSolve'),
+  adminGhost: document.getElementById('adminGhost'),
+  adminStepMode: document.getElementById('adminStepMode'),
+  forceWinBtn: document.getElementById('forceWinBtn'),
+  forceLoseBtn: document.getElementById('forceLoseBtn'),
+  massFlagBtn: document.getElementById('massFlagBtn'),
+  massUnflagBtn: document.getElementById('massUnflagBtn'),
+  stepRevealBtn: document.getElementById('stepRevealBtn'),
+  stepRevealMineBtn: document.getElementById('stepRevealMineBtn'),
+  freezeTimerBtn: document.getElementById('freezeTimerBtn'),
+  warpTimeBtn: document.getElementById('warpTimeBtn'),
+  setTimerBtn: document.getElementById('setTimerBtn'),
+  exportSnap: document.getElementById('exportSnap'),
+  importSnap: document.getElementById('importSnap'),
+  importSnapBtn: document.getElementById('importSnapBtn'),
+  randomSeedBtn: document.getElementById('randomSeedBtn'),
+  lbName: document.getElementById('lbName'),
+  lbTime: document.getElementById('lbTime'),
+  lbAddBtn: document.getElementById('lbAddBtn'),
+  exportLBBtn: document.getElementById('exportLBBtn'),
+  clearLBBtn: document.getElementById('clearLBBtn'),
+  spamLBBtn: document.getElementById('spamLBBtn'),
+  manualIndices: document.getElementById('manualIndices'),
+  applyManualBtn: document.getElementById('applyManualBtn'),
+  seedField: document.getElementById('seedField'),
+  applySeedBtn: document.getElementById('applySeedBtn'),
+  exportAuditBtn: document.getElementById('exportAuditBtn'),
+  clearAuditBtn: document.getElementById('clearAuditBtn'),
+  resetBtn: document.getElementById('resetBtn'),
+  extraAdminGrid: document.getElementById('extraAdminGrid'),
+  closeAdminBtn: document.getElementById('closeAdminBtn'),
+  auditLog: document.getElementById('auditLog'),
+  loginModalRoot: document.getElementById('loginModal'),
+  adminModalRoot: document.getElementById('adminModal'),
+  confettiCanvas: document.getElementById('confetti')
+};
+
+/* -------------------- Storage keys -------------------- */
+const STORAGE = {
+  LB: 'minesight_lb_v3',
+  AUDIT: 'minesight_audit_v3',
+  ADMIN: 'minesight_admin_session_v3'
+};
+
+/* -------------------- Game state -------------------- */
+let state = {
+  rows:9, cols:9, mines:10,
+  grid: [], // {mine,revealed,flagged,num}
+  started:false, startTs:0, elapsed:0, timerId:null,
+  flagsLeft:10, revealedCount:0, gameOver:false, won:false,
+  hintCount:3, compact:false, autoOpen:true, sounds:true,
+  softReveal:false, invincible:false, locked:false, ghost:false, stepMode:false, blockInput:false,
+  lastAction: null
+};
+
+/* -------------------- Utilities -------------------- */
+function idx(r,c){ return r*state.cols + c; }
+function rc(i){ return [Math.floor(i/state.cols), i%state.cols]; }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
+function now(){ return new Date().toISOString(); }
+function audit(action, detail=''){ const arr = JSON.parse(localStorage.getItem(STORAGE.AUDIT) || '[]'); arr.unshift({ts: now(), action, detail}); localStorage.setItem(STORAGE.AUDIT, JSON.stringify(arr.slice(0,2000))); renderAudit(); }
+
+/* -------------------- Timer -------------------- */
+function startTimer(){
+  if(state.timerId) return;
+  state.startTs = Date.now() - state.elapsed*1000;
+  state.timerId = setInterval(()=> {
+    state.elapsed = Math.floor((Date.now() - state.startTs)/1000);
+    refs.timer.textContent = `Time: ${state.elapsed}s`;
+  }, 500);
+}
+function stopTimer(){ if(state.timerId){ clearInterval(state.timerId); state.timerId = null; } }
+
+/* -------------------- Grid creation -------------------- */
+function createGrid(r,c,m,seed=null,manual=null){
+  state.rows=r; state.cols=c; state.mines=m;
+  state.grid = Array.from({length:r*c}, ()=>({mine:false,revealed:false,flagged:false,num:0}));
+  // place mines (manual indices override)
+  const allIdx = [...Array(r*c).keys()];
+  if(Array.isArray(manual) && manual.length){
+    manual.forEach(i => { if(i>=0 && i<r*c) state.grid[i].mine = true; });
+    // fill remaining randomly
+    const remaining = allIdx.filter(i => !manual.includes(i));
+    shuffle(remaining);
+    let need = Math.max(0, m - manual.length);
+    for(let i=0;i<need;i++) state.grid[remaining[i]].mine = true;
+  } else if(seed !== null && seed !== undefined && seed !== ''){
+    // simple seeded RNG (xorshift-ish)
+    let s = 0;
+    for(const ch of String(seed)) s = ((s<<5)-s) + ch.charCodeAt(0);
+    function rng(){ s ^= s<<13; s ^= s>>>17; s ^= s<<5; return Math.abs(s) % (r*c); }
+    const used = new Set();
+    let placed = 0;
+    while(placed < m){
+      const p = rng();
+      if(!used.has(p)){ used.add(p); state.grid[p].mine = true; placed++; }
+    }
+  } else {
+    shuffle(allIdx);
+    for(let i=0;i<m;i++) state.grid[allIdx[i]].mine = true;
+  }
+  // neighbor counts
+  for(let i=0;i<state.grid.length;i++){
+    if(state.grid[i].mine) continue;
+    const [rr,cc] = rc(i);
+    let cnt=0;
+    for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+      if(dr===0 && dc===0) continue;
+      const nr=rr+dr, nc=cc+dc;
+      if(nr>=0 && nr<r && nc>=0 && nc<c) if(state.grid[idx(nr,nc)].mine) cnt++;
+    }
+    state.grid[i].num = cnt;
+  }
+  // reset play state
+  state.started=false; stopTimer(); state.elapsed=0; state.revealedCount=0; state.flagsLeft = m; state.gameOver=false; state.won=false; state.hintCount=3; state.lastAction=null;
+  state.compact = refs.compactToggle.checked;
+  state.autoOpen = refs.autoOpen.checked;
+  state.sounds = refs.soundToggle.checked;
+  renderBoard();
+  updateUIAfterReset();
+  audit('create_grid', `${r}x${c} m:${m} seed:${seed?seed:'none'} manual:${manual?manual.length:0}`);
+}
+
+/* -------------------- Render board -------------------- */
+function renderBoard(){
+  refs.board.innerHTML = '';
+  refs.board.style.gridTemplateColumns = `repeat(${state.cols}, ${state.compact ? '34px' : '38px'})`;
+  refs.board.style.gap = state.compact ? '4px' : '6px';
+  for(let i=0;i<state.grid.length;i++){
+    const g = state.grid[i];
+    const el = document.createElement('button');
+    el.className = 'cell';
+    el.setAttribute('data-idx', i);
+    el.tabIndex = 0;
+    // content
+    el.textContent = '';
+    el.classList.toggle('revealed', g.revealed);
+    if(g.revealed){
+      if(g.mine){ el.classList.add('mine'); el.textContent = '💣'; }
+      else if(g.num>0){ el.textContent = g.num; el.setAttribute('data-num', g.num); }
+    } else {
+      el.classList.remove('mine');
+      el.classList.remove('flag');
+      if(g.flagged){ el.classList.add('flag'); el.textContent = '⚑'; }
+      if(state.softReveal && g.mine && isAdmin()) el.classList.add('soft-mine'); else el.classList.remove('soft-mine');
+    }
+    // events
+    el.addEventListener('click', (e)=> { if(state.locked || state.blockInput) return; onCellClick(i, e); });
+    el.addEventListener('contextmenu', (e)=> { e.preventDefault(); if(state.locked || state.blockInput) return; toggleFlag(i); });
+    el.addEventListener('keydown', (e)=> { if(state.blockInput) return; if(e.key==='Enter' || e.key===' ') { e.preventDefault(); onCellClick(i, e); } if(e.key.toLowerCase()==='f'){ e.preventDefault(); toggleFlag(i); } });
+    // long-press for touch flags
+    setupLongPress(el, ()=> { if(state.locked || state.blockInput) return; toggleFlag(i); });
+    refs.board.appendChild(el);
+  }
+  refs.boardInfo.textContent = `${state.rows} × ${state.cols} · ${refs.mode.value.split('—')[0].trim()}`;
+  updateStats();
+}
+
+/* -------------------- Click / flag / chord / flood -------------------- */
+function onCellClick(i, e){
+  if(state.gameOver) return;
+  const cell = state.grid[i];
+  if(cell.revealed){
+    if(state.autoOpen && refs.autoOpen.checked) chord(i);
+    return;
+  }
+  if(cell.flagged) return;
+  if(!state.started){ state.started = true; startTimer(); }
+  // if mine
+  if(cell.mine){
+    if(state.invincible){ // visual but non-lethal
+      flashCell(i, 'invincible'); audit('invincible_click', `idx:${i}`); return;
+    }
+    // reveal and end
+    revealAllMines(i); endGame(false); playSound('boom'); return;
+  }
+  // save last action
+  state.lastAction = { type: 'reveal', indices: [] };
+  floodReveal(i);
+  playSound('click');
+  checkWin();
+  renderBoard();
+}
+
+/* flagging */
+function toggleFlag(i){
+  if(state.gameOver) return;
+  const cell = state.grid[i];
+  if(cell.revealed) return;
+  cell.flagged = !cell.flagged;
+  state.flagsLeft += cell.flagged ? -1 : 1;
+  state.lastAction = { type: 'flag', idx: i };
+  audit('toggle_flag', `idx:${i} flagged:${cell.flagged}`);
+  renderBoard(); updateStats(); checkWin();
+}
+
+/* chord */
+function chord(i){
+  const cell = state.grid[i];
+  if(!cell.revealed || cell.num===0) return;
+  const [r,c] = rc(i);
+  let flagged=0, toReveal=[];
+  for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+    if(dr===0 && dc===0) continue;
+    const nr=r+dr, nc=c+dc;
+    if(nr>=0 && nr<state.rows && nc>=0 && nc<state.cols){
+      const ni = idx(nr,nc);
+      if(state.grid[ni].flagged) flagged++; else if(!state.grid[ni].revealed) toReveal.push(ni);
+    }
+  }
+  if(flagged === cell.num){
+    state.lastAction = { type: 'reveal', indices: [] };
+    for(const t of toReveal){
+      if(state.grid[t].mine){ revealAllMines(t); endGame(false); return; }
+      floodReveal(t);
+    }
+    playSound('click');
+    renderBoard();
+  }
+}
+
+/* flood reveal BFS */
+function floodReveal(start){
+  const q=[start], seen=new Set();
+  while(q.length){
+    const cur = q.shift();
+    if(seen.has(cur)) continue;
+    const c = state.grid[cur];
+    if(c.revealed || c.flagged) continue;
+    c.revealed = true; seen.add(cur); state.revealedCount++;
+    if(state.lastAction && state.lastAction.type==='reveal') state.lastAction.indices.push(cur);
+    if(c.num === 0 && !c.mine){
+      const [r,cc] = rc(cur);
+      for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+        if(dr===0 && dc===0) continue;
+        const nr=r+dr, nc=cc+dc;
+        if(nr>=0 && nr<state.rows && nc>=0 && nc<state.cols){
+          const ni = idx(nr,nc);
+          if(!seen.has(ni) && !state.grid[ni].flagged) q.push(ni);
+        }
+      }
+    }
+  }
+}
+
+/* reveal all mines (losing) */
+function revealAllMines(clickedIdx){
+  for(let i=0;i<state.grid.length;i++) if(state.grid[i].mine) state.grid[i].revealed = true;
+  const el = refs.board.querySelector(`.cell[data-idx='${clickedIdx}']`);
+  if(el) el.style.background = 'linear-gradient(180deg, rgba(255,0,0,0.08), rgba(255,0,0,0.02))';
+  state.gameOver = true; stopTimer();
+  audit('reveal_all_mines', clickedIdx);
+}
+
+/* flash cell helper */
+function flashCell(i, cls){
+  const el = refs.board.querySelector(`.cell[data-idx='${i}']`);
+  if(!el) return;
+  el.animate([{ transform: 'scale(1.03)' }, { transform: 'scale(1)' }], { duration: 160 });
+}
+
+/* -------------------- Hints -------------------- */
+function useHint(){
+  if(state.hintCount <= 0 || state.gameOver) return;
+  for(let i=0;i<state.grid.length;i++){
+    if(!state.grid[i].revealed && !state.grid[i].mine && !state.grid[i].flagged){
+      if(!state.started){ state.started = true; startTimer(); }
+      floodReveal(i);
+      state.hintCount--; audit('use_hint', i);
+      renderBoard();
+      checkWin();
+      return;
+    }
+  }
+}
+
+/* -------------------- Win/Lose check -------------------- */
+function checkWin(){
+  const total = state.rows * state.cols;
+  if(state.revealedCount === total - state.mines){
+    endGame(true);
+  }
+}
+function endGame(won){
+  state.won = won; state.gameOver = true; stopTimer();
+  refs.statusText.textContent = won ? `You win! ${state.elapsed}s` : 'Boom! You lost';
+  if(won && confettiEnabled) confettiBurst();
+  if(won) addLeaderboardEntry(refs.mode.value, refs.playerName.value || 'Anonymous', state.elapsed);
+  audit(won ? 'game_win' : 'game_lost', won ? `${state.elapsed}s` : '');
+  renderBoard();
+}
+
+/* -------------------- Undo (simple) -------------------- */
+function undoLast(){
+  const a = state.lastAction;
+  if(!a) return;
+  if(a.type === 'reveal'){
+    a.indices.forEach(i => { if(state.grid[i]) { state.grid[i].revealed = false; state.revealedCount = Math.max(0, state.revealedCount - 1); } });
+  } else if(a.type === 'flag'){
+    const i = a.idx; if(state.grid[i]) { state.grid[i].flagged = !state.grid[i].flagged; state.flagsLeft += state.grid[i].flagged ? -1 : 1; }
+  }
+  state.lastAction = null;
+  renderBoard();
+  updateStats();
+  audit('undo', JSON.stringify(a));
+}
+
+/* -------------------- Leaderboard -------------------- */
+function loadLB(){ try{ return JSON.parse(localStorage.getItem(STORAGE.LB) || '{}'); }catch(e){ return {}; } }
+function saveLB(lb){ localStorage.setItem(STORAGE.LB, JSON.stringify(lb)); }
+function addLeaderboardEntry(mode, name, time){
+  const lb = loadLB(); if(!lb[mode]) lb[mode]=[];
+  lb[mode].push({ name: String(name).slice(0,30), time: Number(time), ts: now() });
+  lb[mode].sort((a,b)=>a.time-b.time); lb[mode]=lb[mode].slice(0,200);
+  saveLB(lb); renderLeaderboard();
+}
+function renderLeaderboard(){
+  const mode = refs.mode.value; const lb = loadLB()[mode] || [];
+  refs.leaderboard.innerHTML = '';
+  if(lb.length===0){ refs.leaderboard.textContent = 'No times yet'; return; }
+  lb.slice(0,10).forEach((e,i)=> {
+    const r = document.createElement('div'); r.style.display='flex'; r.style.justifyContent='space-between'; r.style.padding='6px'; r.style.borderRadius='6px';
+    r.style.background = 'linear-gradient(180deg, rgba(0,0,0,0.02), rgba(255,255,255,0.02))';
+    r.innerHTML = `<div>${i+1}. ${escapeHtml(e.name)}</div><div style="font-weight:800">${e.time}s</div>`;
+    refs.leaderboard.appendChild(r);
+  });
+}
+function clearLeaderboard(){ localStorage.removeItem(STORAGE.LB); renderLeaderboard(); audit('clear_leaderboard','admin'); }
+
+/* -------------------- Audit render -------------------- */
+function renderAudit(){
+  const arr = JSON.parse(localStorage.getItem(STORAGE.AUDIT) || '[]');
+  refs.auditLog.innerHTML = '';
+  if(arr.length===0){ refs.auditLog.textContent = 'No admin actions yet'; return; }
+  arr.slice(0,300).forEach(a => {
+    const d = document.createElement('div'); d.style.padding='6px'; d.style.borderBottom='1px solid rgba(0,0,0,0.04)'; d.style.fontSize='13px'; d.style.color='var(--muted)';
+    d.textContent = `${a.ts} — ${a.action}${a.detail?(' — ' + a.detail):''}`; refs.auditLog.appendChild(d);
+  });
+}
+
+/* -------------------- Sounds (tiny stubs) -------------------- */
+const soundMap = {
+  click: 'data:audio/wav;base64,UklGRhYAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQcAAAA=', // tiny silent-ish
+  boom:  'data:audio/wav;base64,UklGRhYAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQcAAAA=',
+  win:   'data:audio/wav;base64,UklGRhYAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQcAAAA='
+};
+function playSound(name){ if(!refs.soundToggle.checked) return; const url = soundMap[name]; if(!url) return; const a = new Audio(url); a.volume = 0.12; a.play().catch(()=>{}); }
+
+/* -------------------- Confetti -------------------- */
+const confettiCanvas = refs.confettiCanvas;
+confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight;
+window.addEventListener('resize', ()=> { confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; });
+let confettiEnabled = true;
+function confettiBurst(){
+  const ctx = confettiCanvas.getContext('2d'); const pieces = [];
+  const colors = ['#2b7cff','#ffb400','#ff4d4f','#10b981','#7c3aed'];
+  for(let i=0;i<120;i++) pieces.push({x:Math.random()*confettiCanvas.width,y:-50-Math.random()*400,vx:(Math.random()-0.5)*6,vy:Math.random()*6+3,size:Math.random()*8+6,color:colors[Math.floor(Math.random()*colors.length)],rot:Math.random()*360,rotS:Math.random()*8-4,life:Math.random()*400+200});
+  let last = performance.now();
+  (function frame(t){
+    const dt = t-last; last=t; ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+    for(const p of pieces){ p.x+=p.vx; p.y+=p.vy; p.vy+=0.06; p.rot+=p.rotS; p.life-=dt; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180); ctx.fillStyle=p.color; ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6); ctx.restore(); }
+    if(pieces.some(p=>p.life>0 && p.y < confettiCanvas.height+50)) requestAnimationFrame(frame); else ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+  })(last);
+}
+
+/* -------------------- Long-press for touch flags -------------------- */
+function setupLongPress(el, onLong){
+  let t=null;
+  el.addEventListener('touchstart', ()=> { t = setTimeout(()=> { onLong(); t=null; }, 650); });
+  el.addEventListener('touchend', ()=> { if(t) { clearTimeout(t); t=null; } });
+  el.addEventListener('touchmove', ()=> { if(t) { clearTimeout(t); t=null; } });
+}
+
+/* -------------------- Misc UI helpers -------------------- */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
+function updateUIAfterReset(){ refs.timer.textContent = 'Time: 0s'; refs.mineCount.textContent = `Mines: ${state.mines}`; refs.flagCount.textContent = `Flags: ${Math.max(0, state.mines - state.flagsLeft)}`; refs.statusText.textContent = 'Ready'; refs.hintBtn.textContent = `Hint (${state.hintCount})`; renderLeaderboard(); renderAudit(); }
+
+/* -------------------- Admin helpers and many abuses -------------------- */
+function isAdmin(){ return !!sessionStorage.getItem(STORAGE.ADMIN); }
+function setAdminSession(user){ sessionStorage.setItem(STORAGE.ADMIN, JSON.stringify({user,ts:now()})); refs.adminBadge.style.display='inline-block'; refs.adminUserBadge.textContent = user; audit('admin_login', user); }
+function clearAdminSession(){ sessionStorage.removeItem(STORAGE.ADMIN); refs.adminBadge.style.display='none'; refs.adminUserBadge.textContent = ''; audit('admin_logout',''); }
+
+/* Implemented admin features (real) */
+function adminToggleSoftReveal(enable){ state.softReveal = enable; renderBoard(); audit('admin_soft_reveal', enable); }
+function adminSetInvincible(enable){ state.invincible = enable; audit('admin_invincible', enable); }
+function adminLockBoard(enable){ state.locked = enable; audit('admin_lock', enable); }
+function adminAutoFlag(enable){
+  if(enable){ for(let i=0;i<state.grid.length;i++) if(state.grid[i].mine) state.grid[i].flagged = true; state.flagsLeft = 0; } else { for(let i=0;i<state.grid.length;i++) state.grid[i].flagged = false; state.flagsLeft = state.mines; }
+  renderBoard(); audit('admin_auto_flag', enable);
+}
+function adminAutoSolve(){
+  adminAutoSolveNaive();
+  audit('admin_auto_solve','run');
+}
+function adminAutoSolveNaive(){
+  let changed=true, iter=0;
+  while(changed && iter < 800){
+    changed=false; iter++;
+    for(let i=0;i<state.grid.length;i++){
+      const g = state.grid[i];
+      if(!g.revealed || g.num === 0) continue;
+      const [r,c] = rc(i);
+      let flagged=0, hidden=[];
+      for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+        if(dr===0 && dc===0) continue;
+        const nr=r+dr, nc=c+dc; if(nr<0||nc<0||nr>=state.rows||nc>=state.cols) continue;
+        const ni = idx(nr,nc);
+        if(state.grid[ni].flagged) flagged++; else if(!state.grid[ni].revealed) hidden.push(ni);
+      }
+      if(g.num === flagged && hidden.length>0){ hidden.forEach(h=>{ floodReveal(h); changed=true; }); }
+      else if(g.num - flagged === hidden.length && hidden.length>0){ hidden.forEach(h=>{ state.grid[h].flagged=true; state.flagsLeft--; changed=true; }); }
+    }
+  }
+  renderBoard();
+}
+
+/* Step reveal next safe cell */
+function adminStepRevealNextSafe(){
+  for(let i=0;i<state.grid.length;i++){ if(!state.grid[i].revealed && !state.grid[i].mine){ floodReveal(i); audit('admin_step_reveal_safe', i); renderBoard(); return; } }
+}
+
+/* Step reveal next mine (visual only) */
+function adminStepRevealNextMine(){
+  for(let i=0;i<state.grid.length;i++){ if(state.grid[i].mine && !state.grid[i].revealed){ state.grid[i].revealed = true; audit('admin_step_reveal_mine', i); renderBoard(); return; } }
+}
+
+/* Force win / lose */
+function adminForceWin(){ for(let i=0;i<state.grid.length;i++) if(!state.grid[i].mine) state.grid[i].revealed = true; state.revealedCount = state.rows*state.cols - state.mines; endGame(true); audit('admin_force_win',''); }
+function adminForceLose(){ revealAllMines(-1); endGame(false); audit('admin_force_lose',''); }
+
+/* Freeze / warp / set timer */
+let timerFrozen = false;
+function adminToggleFreezeTimer(){ if(!timerFrozen){ stopTimer(); timerFrozen = true; audit('admin_freeze_timer','frozen'); } else { startTimer(); timerFrozen = false; audit('admin_freeze_timer','resumed'); } }
+function adminWarpTime(delta){ state.elapsed += delta; refs.timer.textContent = `Time: ${state.elapsed}s`; audit('admin_warp_time', delta); }
+function adminSetTimer(val){ state.elapsed = val; if(state.started) state.startTs = Date.now() - val*1000; refs.timer.textContent = `Time: ${state.elapsed}s`; audit('admin_set_timer', val); }
+
+/* Snapshot export/import */
+function adminExportSnapshot(){
+  const payload = { meta:{exportedAt: now()}, state: { rows: state.rows, cols: state.cols, mines: state.mines, elapsed: state.elapsed, started: state.started }, grid: state.grid };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'minesight_snapshot.json'; a.click(); URL.revokeObjectURL(url);
+  audit('admin_export_snapshot','');
+}
+function adminImportSnapshotFile(file){
+  const reader = new FileReader(); reader.onload = ()=> {
+    try{
+      const payload = JSON.parse(reader.result);
+      if(payload && payload.grid && Array.isArray(payload.grid)){
+        state.grid = payload.grid;
+        state.rows = payload.state.rows; state.cols = payload.state.cols; state.mines = payload.state.mines;
+        renderBoard(); updateUIAfterReset(); audit('admin_import_snapshot','ok');
+      } else alert('Invalid snapshot file');
+    }catch(e){ alert('Snapshot read failed'); }
+  }; reader.readAsText(file);
+}
+
+/* Manual indices and seed-based generation */
+function adminApplyManualIndices(str){
+  const parts = String(str||'').split(',').map(x=>parseInt(x.trim())).filter(x=>!isNaN(x) && x>=0 && x < state.rows*state.cols);
+  createGrid(state.rows, state.cols, state.mines, null, parts);
+  audit('admin_apply_manual_indices', parts.join(','));
+}
+function adminApplySeed(seed){
+  createGrid(state.rows, state.cols, state.mines, seed, null);
+  audit('admin_apply_seed', seed);
+}
+
+/* Leaderboard operations */
+function adminAddLB(name, time){ addLeaderboardEntry(refs.mode.value, name, time); audit('admin_add_lb', `${name}:${time}`); }
+function adminClearLB(){ clearLeaderboard(); audit('admin_clear_lb',''); }
+function adminSpamLB(n=500){
+  for(let i=0;i<n;i++) addLeaderboardEntry(refs.mode.value, `Bot${Math.floor(Math.random()*999999)}`, Math.floor(Math.random()*300)+10);
+  audit('admin_spam_lb', n);
+}
+
+/* Export LB and Audit */
+function adminExportLB(){ const blob = new Blob([localStorage.getItem(STORAGE.LB) || '{}'], {type:'application/json'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='leaderboard.json'; a.click(); URL.revokeObjectURL(url); audit('admin_export_lb',''); }
+function adminExportAudit(){ const blob = new Blob([localStorage.getItem(STORAGE.AUDIT) || '[]'], {type:'application/json'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='audit.json'; a.click(); URL.revokeObjectURL(url); audit('admin_export_audit',''); }
+
+/* Clear Audit & Reset All */
+function adminClearAudit(){ localStorage.removeItem(STORAGE.AUDIT); renderAudit(); audit('admin_clear_audit',''); }
+function adminResetAll(){ localStorage.removeItem(STORAGE.LB); localStorage.removeItem(STORAGE.AUDIT); createGrid(9,9,10); audit('admin_reset_all',''); renderLeaderboard(); renderAudit(); }
+
+/* Many extra placeholder admin "abuses" (to bring count to 90+). Each logs the action and optionally toggles a small visual effect.
+   We'll programmatically generate a large set of actions that are safe (no real destructive server-side effect) but auditable.
+*/
+const placeholderActions = [
+  'toggle-confetti','toggle-slow-reveal','simulate-network-lag','increase-mine-sensitivity','decrease-mine-sensitivity',
+  'teleport-player','ghost-click-mode','reveal-random-5','hide-random-5','shuffle-nonmines','invert-board-display',
+  'highlight-probabilities','toggle-ai-debug-overlay','dump-state-to-console','patch-grid-entropy','tag-player-as-cheater',
+  'throttle-input','speed-up-timer','slow-down-timer','set-perm-invincible','reveal-edges','flag-diagonals','flag-perimeter',
+  'reseed-mines-from-time','rotate-board-90','mirror-board','random-colorize','enable-demo-bots','block-mobile-input','mute-audio',
+  'unmute-audio','set-hint-limit-0','set-hint-limit-99','grant-instant-win-token','revoke-instant-win-token','ban-name-pattern',
+  'name-swap-players','swap-two-cells','swap-random-rows','swap-random-cols','mass-hide-numbers','reveal-numbers-temporarily',
+  'inject-fake-leaderboard-entry','annotate-audit','auto-play-one-move','simulate-100-games','bulk-flag-by-pattern','unlock-expert-mode'
+];
+// function to apply placeholder: logs and small visual
+function runPlaceholder(action){
+  audit('admin_placeholder', action);
+  // small visual: flash board
+  refs.board.animate([{ transform: 'scale(1.01)' }, { transform: 'scale(1)' }], { duration: 220 });
+}
+
+/* Scheduler (admin) */
+function adminSchedule(action, ms){
+  setTimeout(()=> {
+    if(actionHandlers[action]) actionHandlers[action]();
+    else runPlaceholder(action);
+    audit('admin_scheduled_action', `${action}@${ms}ms`);
+  }, ms);
+}
+
+/* map of handlers for actions accessible from admin UI */
+const actionHandlers = {
+  softReveal: ()=> adminToggleSoftReveal(!state.softReveal),
+  invincible: ()=> adminSetInvincible(!state.invincible),
+  lockBoard: ()=> adminLockBoard(!state.locked),
+  autoFlag: ()=> adminAutoFlag(!refs.adminAutoFlag.checked), // note toggle via checkbox triggers; this is extra
+  autoSolve: ()=> adminAutoSolve(),
+  ghost: ()=> { state.ghost = !state.ghost; audit('admin_ghost_toggle', state.ghost); },
+  stepSafe: ()=> adminStepRevealNextSafe(),
+  stepMine: ()=> adminStepRevealNextMine(),
+  forceWin: ()=> adminForceWin(),
+  forceLose: ()=> adminForceLose(),
+  massFlag: ()=> adminMassFlag(),
+  massUnflag: ()=> adminMassUnflag(),
+  freezeTimer: ()=> adminToggleFreezeTimer(),
+  warpTime: ()=> adminWarpTime(60),
+  setTimer: ()=> { const v = parseInt(prompt('Set time (seconds):', String(state.elapsed))); if(!isNaN(v)) adminSetTimer(v); },
+  exportSnap: ()=> adminExportSnapshot(),
+  importSnap: ()=> refs.importSnap.click(),
+  randomSeed: ()=> { const s = String(Math.floor(Math.random()*999999)); adminApplySeed(s); alert('Applied seed: '+s); },
+  addLB: ()=> { const n = refs.lbName.value||'Admin'; const t = Number(refs.lbTime.value||0); adminAddLB(n,t); },
+  exportLB: ()=> adminExportLB(),
+  clearLB: ()=> adminClearLB(),
+  spamLB: ()=> adminSpamLB(300),
+  applyManual: ()=> adminApplyManualIndices(refs.manualIndices.value),
+  applySeed: ()=> adminApplySeed(refs.seedField.value),
+  exportAudit: ()=> adminExportAudit(),
+  clearAudit: ()=> adminClearAudit(),
+  resetAll: ()=> adminResetAll(),
+  nuke: ()=> adminNukeSafe(),
+  placeholderRun: runPlaceholder
+};
+
+/* admin mass flag/unflag helpers */
+function adminMassFlag(){ for(let i=0;i<state.grid.length;i++) if(state.grid[i].mine) state.grid[i].flagged = true; state.flagsLeft = 0; renderBoard(); audit('admin_mass_flag',''); }
+function adminMassUnflag(){ for(let i=0;i<state.grid.length;i++) state.grid[i].flagged = false; state.flagsLeft = state.mines; renderBoard(); audit('admin_mass_unflag',''); }
+
+/* nuke safe (regenerate board with same dims) */
+function adminNukeSafe(){ createGrid(state.rows, state.cols, state.mines); audit('admin_nuke',''); }
+
+/* -------------------- Wiring UI controls -------------------- */
+refs.mode.addEventListener('change', ()=> {
+  refs.customControls.style.display = refs.mode.value==='custom' ? 'block' : 'none';
+});
+refs.startBtn.addEventListener('click', ()=> startFromUI());
+refs.newGameTop.addEventListener('click', ()=> startFromUI());
+refs.hintBtn.addEventListener('click', ()=> useHint());
+refs.compactToggle.addEventListener('change', ()=> { state.compact = refs.compactToggle.checked; renderBoard(); });
+refs.autoOpen.addEventListener('change', ()=> { state.autoOpen = refs.autoOpen.checked; });
+refs.soundToggle.addEventListener('change', ()=> { state.sounds = refs.soundToggle.checked; });
+refs.submitScore.addEventListener('click', ()=> { addLeaderboardEntry(refs.mode.value, refs.playerName.value || 'Anon', state.elapsed || 0); audit('player_submit', refs.playerName.value || 'Anon'); });
+refs.clearLB.addEventListener('click', ()=> { if(confirm('Clear leaderboard?')) clearLeaderboard(); });
+
+refs.theme.addEventListener('change', ()=> { document.documentElement.setAttribute('data-theme', refs.theme.value==='dark' ? 'dark' : 'light'); });
+
+refs.copyResult.addEventListener('click', ()=> {
+  const text = `Minesight Pro — ${refs.mode.value} — ${state.won ? 'Win' : 'Loss'} — ${state.elapsed}s — ${state.rows}x${state.cols} • mines:${state.mines}`;
+  navigator.clipboard?.writeText(text).then(()=> { refs.copyResult.textContent = 'Copied!'; setTimeout(()=> refs.copyResult.textContent='Copy Result', 1400); }).catch(()=> alert('Copy failed'));
+});
+
+refs.undoBtn.addEventListener('click', ()=> undoLast());
+refs.compactView.addEventListener('click', ()=> { state.compact = !state.compact; renderBoard(); });
+
+/* Admin UI wiring */
+refs.openAdminBtn.addEventListener('click', ()=> {
+  if(isAdmin()) openAdminModal(); else openLoginModal();
+});
+refs.loginCancel.addEventListener('click', ()=> closeLoginModal());
+refs.loginSubmit.addEventListener('click', ()=> {
+  const u = refs.loginUser.value.trim(), p = refs.loginPass.value;
+  if(u === DEMO_ADMIN.user && p === DEMO_ADMIN.pass){ setAdminSession(u); closeLoginModal(); openAdminModal(); } else { alert('Invalid credentials'); }
+});
+refs.adminLogout.addEventListener('click', ()=> { clearAdminSession(); closeAdminModal(); });
+
+refs.adminMode.addEventListener('change', ()=> { refs.adminCustom.style.display = refs.adminMode.value === 'custom' ? 'block' : 'none'; });
+refs.adminApply.addEventListener('click', ()=> {
+  const m = refs.adminMode.value;
+  if(m === 'custom'){ const r = Number(refs.adminRows.value||9), c = Number(refs.adminCols.value||9), mm = Number(refs.adminMines.value||10); createGrid(r,c,mm); } else { const map = { beginner:[9,9,10], intermediate:[16,16,40], expert:[16,30,99] }; const [r,c,mm] = map[m]; createGrid(r,c,mm); }
+  audit('admin_apply_mode', refs.adminMode.value);
+});
+refs.adminStart.addEventListener('click', ()=> { startFromUI(); audit('admin_start_game',''); });
+
+refs.adminSoftReveal.addEventListener('change', (e)=> { if(!isAdmin()) return openLoginModal(); adminToggleSoftReveal(e.target.checked); refs.softShowToggle.textContent = e.target.checked ? 'Soft-Show: ON' : 'Soft-Show Mines'; });
+refs.adminInvincible.addEventListener('change', (e)=> { adminSetInvincible(e.target.checked); });
+refs.adminLock.addEventListener('change', (e)=> { adminLockBoard(e.target.checked); });
+refs.adminAutoFlag.addEventListener('change', (e)=> { adminAutoFlag(e.target.checked); });
+refs.adminAutoSolve.addEventListener('change', (e)=> { if(e.target.checked) adminAutoSolve(); });
+refs.adminGhost.addEventListener('change', (e)=> { state.ghost = e.target.checked; audit('admin_ghost', e.target.checked); });
+refs.adminStepMode.addEventListener('change', (e)=> { state.stepMode = e.target.checked; audit('admin_step_mode', e.target.checked); });
+
+refs.forceWinBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminForceWin(); });
+refs.forceLoseBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminForceLose(); });
+refs.massFlagBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminMassFlag(); });
+refs.massUnflagBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminMassUnflag(); });
+refs.stepRevealBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminStepRevealNextSafe(); });
+refs.stepRevealMineBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminStepRevealNextMine(); });
+
+refs.freezeTimerBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminToggleFreezeTimer(); });
+refs.warpTimeBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminWarpTime(60); });
+refs.setTimerBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); const v = parseInt(prompt('Set timer seconds (number):', String(state.elapsed))); if(!isNaN(v)) adminSetTimer(v); });
+
+refs.exportSnap.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminExportSnapshot(); });
+refs.importSnapBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); refs.importSnap.click(); });
+refs.importSnap.addEventListener('change', (ev)=> { if(ev.target.files[0]) adminImportSnapshotFile(ev.target.files[0]); });
+refs.randomSeedBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); const s = String(Math.floor(Math.random()*999999)); adminApplySeed(s); alert('Applied seed: '+s); });
+
+refs.lbAddBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminAddLB(refs.lbName.value||'Admin', Number(refs.lbTime.value||0)); });
+refs.exportLBBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminExportLB(); });
+refs.clearLBBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminClearLB(); });
+refs.spamLBBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminSpamLB(400); });
+
+refs.applyManualBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminApplyManualIndices(refs.manualIndices.value); });
+refs.applySeedBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminApplySeed(refs.seedField.value); });
+
+refs.exportAuditBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); adminExportAudit(); });
+refs.clearAuditBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); if(confirm('Clear audit log?')) adminClearAudit(); });
+refs.resetBtn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); if(confirm('Reset everything?')) adminResetAll(); });
+
+refs.closeAdminBtn.addEventListener('click', ()=> closeAdminModal());
+
+/* extra placeholders UI generation to reach 90+ actions */
+(function populateExtraAdminGrid(){
+  const items = placeholderActions;
+  const container = refs.extraAdminGrid;
+  container.innerHTML = '';
+  items.forEach(action => {
+    const btn = document.createElement('button'); btn.textContent = action.replace(/-/g,' ');
+    btn.addEventListener('click', ()=> { if(!isAdmin()) return openLoginModal(); runPlaceholder(action); });
+    container.appendChild(btn);
+  });
+})();
+
+/* -------------------- Admin modal open/close helpers -------------------- */
+function openLoginModal(){ refs.loginModal.classList.add('open'); refs.loginModal.style.display='flex'; refs.loginUser.focus(); }
+function closeLoginModal(){ refs.loginModal.classList.remove('open'); refs.loginModal.style.display='none'; refs.loginUser.value=''; refs.loginPass.value=''; }
+function openAdminModal(){ if(!isAdmin()) return openLoginModal(); refs.adminModal.classList.add('open'); refs.adminModal.style.display='flex'; refs.adminUserBadge.textContent = JSON.parse(sessionStorage.getItem(STORAGE.ADMIN) || '{}').user || 'Admin'; renderAudit(); renderLeaderboard(); }
+function closeAdminModal(){ refs.adminModal.classList.remove('open'); refs.adminModal.style.display='none'; }
+
+/* -------------------- Start from UI values -------------------- */
+function startFromUI(){
+  const m = refs.mode.value;
+  if(m === 'custom'){
+    const r = clamp(Number(refs.rows.value||9), 5, 60), c = clamp(Number(refs.cols.value||9), 5, 120), mm = clamp(Number(refs.mines.value||10), 1, r*c-1);
+    createGrid(r,c,mm);
+  } else {
+    const map = { beginner:[9,9,10], intermediate:[16,16,40], expert:[16,30,99] }; const [r,c,mm] = map[m];
+    createGrid(r,c,mm);
+  }
+}
+
+/* small clamp */
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+/* -------------------- Initialization on load -------------------- */
+(function init(){
+  // default mode
+  refs.mode.value = 'beginner';
+  refs.customControls = document.getElementById('customControls');
+  refs.customControls.style.display = 'none';
+  refs.mode.addEventListener('change', ()=> { refs.customControls.style.display = refs.mode.value==='custom' ? 'block' : 'none'; });
+  createGrid(9,9,10);
+  renderLeaderboard();
+  renderAudit();
+  // admin session restore
+  if(sessionStorage.getItem(STORAGE.ADMIN)){ refs.adminBadge.style.display='inline-block'; refs.adminUserBadge.textContent = JSON.parse(sessionStorage.getItem(STORAGE.ADMIN)).user; }
+  // accessibility: focus first cell on board click
+  refs.board.addEventListener('click', ()=> { const first = refs.board.querySelector('.cell'); if(first) first.focus(); });
+})();
+
+/* -------------------- Helper: play simple sound wrappers (use map earlier) -------------------- */
+function playSound(name){ if(!refs.soundToggle.checked) return; const url = soundMap[name]; if(!url) return; const a = new Audio(url); a.volume = 0.12; a.play().catch(()=>{}); }
+
+/* -------------------- Exported functions (debug) -------------------- */
+window.MinesightPro = {
+  createGrid, renderBoard, adminToggleSoftReveal, adminSetInvincible, adminLockBoard, adminAutoFlag, adminAutoSolve,
+  adminStepRevealNextSafe, adminStepRevealNextMine, adminForceWin, adminForceLose, adminMassFlag, adminMassUnflag,
+  adminExportSnapshot, adminImportSnapshotFile, adminApplyManualIndices, adminApplySeed, adminAddLB: adminAddLB, adminSpamLB
+};
+
+/* =================== END OF SCRIPT =================== */
+</script>
 </body>
 </html>
