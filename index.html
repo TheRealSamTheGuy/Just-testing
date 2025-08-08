@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pixel Dash</title>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: #222;
+        overflow: hidden;
+        height: 100%;
+    }
+    canvas {
+        display: block;
+        margin: auto;
+        background: #4cafef;
+    }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let isMobile = /Mobi|Android/i.test(navigator.userAgent);
+let width = isMobile ? window.innerWidth : 800;
+let height = isMobile ? window.innerHeight : 400;
+canvas.width = width;
+canvas.height = height;
+
+// Game variables
+let cube = { x: 100, y: height - 60, size: 40, dy: 0, jumping: false };
+let gravity = 0.6;
+let jumpForce = -12;
+let speed = 6;
+let obstacles = [];
+let groundHeight = 40;
+let score = 0;
+let level = 1;
+let bgColor = "#4cafef";
+let doubleSpeedTimer = 0;
+let gameOver = false;
+
+// Create obstacles
+function spawnObstacle() {
+    let type = Math.random() < 0.5 ? "gap" : "spike";
+    let widthOrGap = type === "gap" ? 80 + Math.random() * 40 : 40;
+    obstacles.push({
+        x: canvas.width,
+        y: height - groundHeight - (type === "spike" ? 40 : 0),
+        width: widthOrGap,
+        height: type === "spike" ? 40 : 0,
+        type: type
+    });
+}
+
+// Handle jump
+function jump() {
+    if (!cube.jumping) {
+        cube.dy = jumpForce;
+        cube.jumping = true;
+    }
+}
+
+// Handle swipe on mobile
+let touchStartX = 0, touchStartY = 0;
+canvas.addEventListener("touchstart", e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+}, false);
+canvas.addEventListener("touchend", e => {
+    let dx = e.changedTouches[0].clientX - touchStartX;
+    let dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) < 50 && Math.abs(dy) < 50) {
+        jump();
+    }
+}, false);
+
+// Keyboard controls
+document.addEventListener("keydown", e => {
+    if (e.code === "Space" || e.code === "ArrowUp") jump();
+    if (gameOver && e.code === "Enter") resetGame();
+});
+
+// Game loop
+function update() {
+    if (gameOver) return;
+
+    // Speed up for double-speed mode
+    let currentSpeed = doubleSpeedTimer > 0 ? speed * 2 : speed;
+    if (doubleSpeedTimer > 0) doubleSpeedTimer--;
+
+    // Move cube
+    cube.y += cube.dy;
+    cube.dy += gravity;
+    if (cube.y >= height - cube.size - groundHeight) {
+        cube.y = height - cube.size - groundHeight;
+        cube.jumping = false;
+    }
+
+    // Move and remove obstacles
+    obstacles.forEach(o => o.x -= currentSpeed);
+    obstacles = obstacles.filter(o => o.x + o.width > 0);
+
+    // Spawn new obstacles
+    if (Math.random() < 0.02) spawnObstacle();
+
+    // Collision detection
+    for (let o of obstacles) {
+        if (o.type === "spike") {
+            if (cube.x < o.x + o.width &&
+                cube.x + cube.size > o.x &&
+                cube.y + cube.size > o.y) {
+                gameOver = true;
+            }
+        } else if (o.type === "gap") {
+            if (cube.x + cube.size > o.x &&
+                cube.x < o.x + o.width &&
+                cube.y + cube.size >= height - groundHeight) {
+                gameOver = true;
+            }
+        }
+    }
+
+    // Score & level progression
+    score++;
+    if (score % 500 === 0) {
+        level++;
+        bgColor = `hsl(${Math.random() * 360}, 60%, 60%)`;
+        if (Math.random() < 0.3) doubleSpeedTimer = 200;
+    }
+}
+
+function draw() {
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw ground
+    ctx.fillStyle = "#222";
+    ctx.fillRect(0, height - groundHeight, canvas.width, groundHeight);
+
+    // Draw cube
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(cube.x, cube.y, cube.size, cube.size);
+
+    // Draw obstacles
+    ctx.fillStyle = "#e53935";
+    obstacles.forEach(o => {
+        if (o.type === "spike") {
+            ctx.beginPath();
+            ctx.moveTo(o.x, o.y + o.height);
+            ctx.lineTo(o.x + o.width / 2, o.y);
+            ctx.lineTo(o.x + o.width, o.y + o.height);
+            ctx.closePath();
+            ctx.fill();
+        }
+    });
+
+    // Score
+    ctx.fillStyle = "#fff";
+    ctx.font = "20px Arial";
+    ctx.fillText(`Score: ${score}`, 10, 25);
+    ctx.fillText(`Level: ${level}`, 10, 50);
+
+    if (gameOver) {
+        ctx.fillStyle = "#fff";
+        ctx.font = "40px Arial";
+        ctx.fillText("Game Over", canvas.width / 2 - 100, canvas.height / 2);
+        ctx.font = "20px Arial";
+        ctx.fillText("Press Enter to Restart", canvas.width / 2 - 100, canvas.height / 2 + 40);
+    }
+}
+
+function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+function resetGame() {
+    cube.y = height - 60;
+    cube.dy = 0;
+    cube.jumping = false;
+    score = 0;
+    level = 1;
+    speed = 6;
+    obstacles = [];
+    bgColor = "#4cafef";
+    gameOver = false;
+}
+
+loop();
+</script>
+</body>
+</html>
