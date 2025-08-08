@@ -1,50 +1,185 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Pixel Dash</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
     html, body {
         margin: 0;
         padding: 0;
-        background: #222;
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #1d1d1d, #2e2e2e);
+        color: white;
         overflow: hidden;
-        height: 100%;
+    }
+
+    /* Center utility */
+    .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Landing page styles */
+    #landing {
+        height: 100vh;
+        flex-direction: column;
+        text-align: center;
+    }
+    .logo {
+        font-size: 64px;
+        font-weight: bold;
+        color: #00d4ff;
+        text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff;
+        margin-bottom: 20px;
+    }
+    .desc {
+        font-size: 18px;
+        max-width: 600px;
+        margin: 0 auto 30px auto;
+        color: #ccc;
+    }
+    .play-btn {
+        background: #00d4ff;
+        border: none;
+        padding: 15px 30px;
+        font-size: 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        color: #000;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+    .play-btn:hover {
+        background: #00aacc;
+    }
+
+    /* Device selection styles */
+    #device-select {
+        height: 100vh;
+        flex-direction: column;
+        display: none;
+        text-align: center;
+    }
+    .device-btn {
+        background: #444;
+        border: none;
+        padding: 15px 30px;
+        font-size: 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        color: white;
+        margin: 10px;
+        transition: background 0.3s;
+    }
+    .device-btn:hover {
+        background: #666;
+    }
+
+    /* Game canvas */
+    #game-container {
+        display: none;
+        background: black;
+        height: 100vh;
+        width: 100vw;
     }
     canvas {
         display: block;
         margin: auto;
         background: #4cafef;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
     }
 </style>
 </head>
 <body>
-<canvas id="game"></canvas>
+
+<!-- Landing Page -->
+<div id="landing" class="center">
+    <div class="logo">🎮 Pixel Dash</div>
+    <div class="desc">
+        A fast-paced one-tap / swipe reaction game where you control a cube racing through a world of spikes and gaps.  
+        Jump, dodge, and survive as the speed increases.  
+        Can you master the double-speed mode and beat your high score?
+    </div>
+    <button class="play-btn" onclick="showDeviceSelect()">Play Now</button>
+</div>
+
+<!-- Device Selection -->
+<div id="device-select" class="center">
+    <h2>Select your device</h2>
+    <button class="device-btn" onclick="startGame('pc')">💻 PC</button>
+    <button class="device-btn" onclick="startGame('mobile')">📱 Phone</button>
+</div>
+
+<!-- Game Container -->
+<div id="game-container" class="center">
+    <canvas id="game"></canvas>
+</div>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+// UI Navigation
+function showDeviceSelect() {
+    document.getElementById("landing").style.display = "none";
+    document.getElementById("device-select").style.display = "flex";
+}
 
-let isMobile = /Mobi|Android/i.test(navigator.userAgent);
-let width = isMobile ? window.innerWidth : 800;
-let height = isMobile ? window.innerHeight : 400;
-canvas.width = width;
-canvas.height = height;
+function startGame(device) {
+    document.getElementById("device-select").style.display = "none";
+    document.getElementById("game-container").style.display = "flex";
+    initGame(device);
+}
 
-// Game variables
-let cube = { x: 100, y: height - 60, size: 40, dy: 0, jumping: false };
-let gravity = 0.6;
-let jumpForce = -12;
-let speed = 6;
-let obstacles = [];
-let groundHeight = 40;
-let score = 0;
-let level = 1;
-let bgColor = "#4cafef";
-let doubleSpeedTimer = 0;
-let gameOver = false;
+// Game Variables
+let canvas, ctx, isMobile, width, height, cube, gravity, jumpForce, speed, obstacles, groundHeight, score, level, bgColor, doubleSpeedTimer, gameOver;
 
-// Create obstacles
+// Initialize Game
+function initGame(device) {
+    canvas = document.getElementById("game");
+    ctx = canvas.getContext("2d");
+
+    isMobile = device === "mobile";
+    width = isMobile ? window.innerWidth : 800;
+    height = isMobile ? window.innerHeight : 400;
+    canvas.width = width;
+    canvas.height = height;
+
+    cube = { x: 100, y: height - 60, size: 40, dy: 0, jumping: false };
+    gravity = 0.6;
+    jumpForce = -12;
+    speed = 6;
+    obstacles = [];
+    groundHeight = 40;
+    score = 0;
+    level = 1;
+    bgColor = "#4cafef";
+    doubleSpeedTimer = 0;
+    gameOver = false;
+
+    if (isMobile) {
+        let touchStartX = 0, touchStartY = 0;
+        canvas.addEventListener("touchstart", e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+        canvas.addEventListener("touchend", e => {
+            let dx = e.changedTouches[0].clientX - touchStartX;
+            let dy = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(dx) < 50 && Math.abs(dy) < 50) {
+                jump();
+            }
+        });
+    } else {
+        document.addEventListener("keydown", e => {
+            if (e.code === "Space" || e.code === "ArrowUp") jump();
+            if (gameOver && e.code === "Enter") resetGame();
+        });
+    }
+
+    loop();
+}
+
+// Game Functions
 function spawnObstacle() {
     let type = Math.random() < 0.5 ? "gap" : "spike";
     let widthOrGap = type === "gap" ? 80 + Math.random() * 40 : 40;
@@ -57,7 +192,6 @@ function spawnObstacle() {
     });
 }
 
-// Handle jump
 function jump() {
     if (!cube.jumping) {
         cube.dy = jumpForce;
@@ -65,35 +199,11 @@ function jump() {
     }
 }
 
-// Handle swipe on mobile
-let touchStartX = 0, touchStartY = 0;
-canvas.addEventListener("touchstart", e => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-}, false);
-canvas.addEventListener("touchend", e => {
-    let dx = e.changedTouches[0].clientX - touchStartX;
-    let dy = e.changedTouches[0].clientY - touchStartY;
-    if (Math.abs(dx) < 50 && Math.abs(dy) < 50) {
-        jump();
-    }
-}, false);
-
-// Keyboard controls
-document.addEventListener("keydown", e => {
-    if (e.code === "Space" || e.code === "ArrowUp") jump();
-    if (gameOver && e.code === "Enter") resetGame();
-});
-
-// Game loop
 function update() {
     if (gameOver) return;
-
-    // Speed up for double-speed mode
     let currentSpeed = doubleSpeedTimer > 0 ? speed * 2 : speed;
     if (doubleSpeedTimer > 0) doubleSpeedTimer--;
 
-    // Move cube
     cube.y += cube.dy;
     cube.dy += gravity;
     if (cube.y >= height - cube.size - groundHeight) {
@@ -101,31 +211,23 @@ function update() {
         cube.jumping = false;
     }
 
-    // Move and remove obstacles
     obstacles.forEach(o => o.x -= currentSpeed);
     obstacles = obstacles.filter(o => o.x + o.width > 0);
 
-    // Spawn new obstacles
     if (Math.random() < 0.02) spawnObstacle();
 
-    // Collision detection
     for (let o of obstacles) {
         if (o.type === "spike") {
-            if (cube.x < o.x + o.width &&
-                cube.x + cube.size > o.x &&
-                cube.y + cube.size > o.y) {
+            if (cube.x < o.x + o.width && cube.x + cube.size > o.x && cube.y + cube.size > o.y) {
                 gameOver = true;
             }
         } else if (o.type === "gap") {
-            if (cube.x + cube.size > o.x &&
-                cube.x < o.x + o.width &&
-                cube.y + cube.size >= height - groundHeight) {
+            if (cube.x + cube.size > o.x && cube.x < o.x + o.width && cube.y + cube.size >= height - groundHeight) {
                 gameOver = true;
             }
         }
     }
 
-    // Score & level progression
     score++;
     if (score % 500 === 0) {
         level++;
@@ -137,16 +239,10 @@ function update() {
 function draw() {
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw ground
     ctx.fillStyle = "#222";
     ctx.fillRect(0, height - groundHeight, canvas.width, groundHeight);
-
-    // Draw cube
     ctx.fillStyle = "#fff";
     ctx.fillRect(cube.x, cube.y, cube.size, cube.size);
-
-    // Draw obstacles
     ctx.fillStyle = "#e53935";
     obstacles.forEach(o => {
         if (o.type === "spike") {
@@ -159,7 +255,6 @@ function draw() {
         }
     });
 
-    // Score
     ctx.fillStyle = "#fff";
     ctx.font = "20px Arial";
     ctx.fillText(`Score: ${score}`, 10, 25);
@@ -191,8 +286,7 @@ function resetGame() {
     bgColor = "#4cafef";
     gameOver = false;
 }
-
-loop();
 </script>
+
 </body>
 </html>
